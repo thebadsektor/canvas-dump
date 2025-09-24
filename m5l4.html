@@ -225,6 +225,19 @@
         .tooltip.active {
             opacity: 1;
         }
+
+        .searching {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -301,8 +314,15 @@
                     </h3>
                     <p class="mt-2">Search for a topic in a 1,000-page book.</p>
                     <div class="flex justify-center items-center gap-4 mt-4">
-                        <button id="scan-btn" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Manual Search</button>
-                        <button id="index-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Indexed Search</button>
+                        <button id="scan-btn" class="flex items-center bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">
+                            <svg id="scan-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Manual Search
+                        </button>
+                        <button id="index-btn" class="flex items-center bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">
+                            <svg id="index-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Indexed Search
+                        </button>
+                        <button id="reset-search-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Reset</button>
                     </div>
                     <p id="search-status" class="mt-4 font-semibold text-gray-700"></p>
                 </div>
@@ -319,7 +339,10 @@
                     <p class="text-sm text-gray-500 italic">Enter a gender. The system will only accept 'Male', 'Female', or 'Other'.</p>
                     <div class="flex flex-col items-center mt-4">
                         <input type="text" id="gender-input" placeholder="Enter gender" class="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-center w-full max-w-sm">
-                        <button id="validate-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full mt-4 transition-colors duration-300 transform hover:scale-105">Validate</button>
+                        <div class="flex gap-4">
+                            <button id="validate-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full mt-4 transition-colors duration-300 transform hover:scale-105">Validate</button>
+                            <button id="reset-gender-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full mt-4 transition-colors duration-300 transform hover:scale-105">Reset</button>
+                        </div>
                         <p id="validation-result" class="mt-4 font-semibold text-gray-700 min-h-6"></p>
                     </div>
                 </div>
@@ -347,11 +370,12 @@
                     <p class="font-semibold text-gray-800">Last Ticket Simulation</p>
                     <p class="text-sm text-gray-500 italic">Imagine two users trying to buy the very last ticket at the exact same time.</p>
                     <div id="concurrency-box" class="mt-4">
-                        <p id="ticket-info">Tickets Available: <span id="ticket-count">1</span></p>
+                        <p id="ticket-info">Tickets Available: <span id="ticket-count">5</span></p>
                         <div class="flex gap-4">
                             <button id="user1-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">User 1: Buy Ticket</button>
                             <button id="user2-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">User 2: Buy Ticket</button>
                         </div>
+                        <button id="reset-concurrency-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full mt-2 transition-colors duration-300 transform hover:scale-105">Reset</button>
                         <p id="concurrency-msg" class="text-sm font-semibold text-gray-700 min-h-6"></p>
                     </div>
                 </div>
@@ -445,35 +469,52 @@
             const scanBtn = document.getElementById('scan-btn');
             const indexBtn = document.getElementById('index-btn');
             const searchStatus = document.getElementById('search-status');
+            const scanIcon = document.getElementById('scan-icon');
+            const indexIcon = document.getElementById('index-icon');
 
             scanBtn.addEventListener('click', () => {
                 searchStatus.innerHTML = 'Scanning every page<span class="loading-dots"></span>';
                 scanBtn.disabled = true;
                 indexBtn.disabled = true;
+                scanIcon.classList.add('searching');
 
                 setTimeout(() => {
-                    searchStatus.textContent = 'Found it! (Took 3 seconds)';
+                    searchStatus.textContent = 'Found it! (Took 10 minutes)';
                     scanBtn.disabled = false;
                     indexBtn.disabled = false;
-                }, 3000); 
+                    scanIcon.classList.remove('searching');
+                }, 4000); 
             });
 
             indexBtn.addEventListener('click', () => {
                 searchStatus.textContent = 'Using index...';
                 scanBtn.disabled = true;
                 indexBtn.disabled = true;
+                indexIcon.classList.add('searching');
 
                 setTimeout(() => {
-                    searchStatus.textContent = 'Found it instantly! (Took 0.5 seconds)';
+                    searchStatus.textContent = 'Found it instantly! (Took 0.1 seconds)';
                     scanBtn.disabled = false;
                     indexBtn.disabled = false;
+                    indexIcon.classList.remove('searching');
                 }, 500); 
+            });
+
+            const resetSearchBtn = document.getElementById('reset-search-btn');
+
+            resetSearchBtn.addEventListener('click', () => {
+                searchStatus.textContent = '';
+                scanBtn.disabled = false;
+                indexBtn.disabled = false;
+                scanIcon.classList.remove('searching');
+                indexIcon.classList.remove('searching');
             });
             
             // Slide 6: Domain Constraint
             const genderInput = document.getElementById('gender-input');
             const validateBtn = document.getElementById('validate-btn');
             const validationResult = document.getElementById('validation-result');
+            const resetGenderBtn = document.getElementById('reset-gender-btn');
             const allowedGenders = ['male', 'female', 'other'];
 
             validateBtn.addEventListener('click', () => {
@@ -486,14 +527,30 @@
                     validationResult.style.color = '#ef4444';
                 }
             });
+
+            resetGenderBtn.addEventListener('click', () => {
+                genderInput.value = '';
+                validationResult.textContent = '';
+            });
             
             // Slide 8: Concurrency Control Simulation
             const user1Btn = document.getElementById('user1-btn');
             const user2Btn = document.getElementById('user2-btn');
             const ticketCount = document.getElementById('ticket-count');
             const concurrencyMsg = document.getElementById('concurrency-msg');
+            const resetConcurrencyBtn = document.getElementById('reset-concurrency-btn');
             let isTicketLocked = false;
-            let tickets = 1;
+            let tickets = 5;
+
+            const resetConcurrency = () => {
+                tickets = 5;
+                ticketCount.textContent = tickets;
+                isTicketLocked = false;
+                concurrencyMsg.textContent = '';
+                // Explicitly re-enable buttons on reset
+                user1Btn.disabled = false;
+                user2Btn.disabled = false;
+            };
 
             const handleBuyTicket = (user) => {
                 if (tickets <= 0) {
@@ -516,13 +573,17 @@
                     ticketCount.textContent = tickets;
                     concurrencyMsg.textContent = `${user}'s transaction complete! Ticket purchased.`;
                     isTicketLocked = false;
-                    user1Btn.disabled = false;
-                    user2Btn.disabled = false;
+                    
+                    if (tickets > 0) {
+                        user1Btn.disabled = false;
+                        user2Btn.disabled = false;
+                    }
                 }, 2000); 
             };
 
             user1Btn.addEventListener('click', () => handleBuyTicket('User 1'));
             user2Btn.addEventListener('click', () => handleBuyTicket('User 2'));
+            resetConcurrencyBtn.addEventListener('click', resetConcurrency);
 
             // Initial slide display
             showSlide(currentSlideIndex);
