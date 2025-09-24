@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Causal Forecasting Simulation — Improved</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    .canvas-wrap { background: white; border-radius: 12px; padding: 18px; box-shadow: 0 6px 18px rgba(13, 17, 23, 0.06); }
+    canvas { width: 100%; height: 320px; display: block; border-radius: 8px; background: transparent; }
+    canvas.small { height: 140px; margin-top: 18px; }
+    .btn { transition: all .15s; }
+    .btn.active { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(79,70,229,0.18); }
+    .chip { padding: .35rem .6rem; border-radius: 999px; background:#eef2ff; color:#4f46e5; font-weight:600; font-size: .85rem; }
+    .muted { color: #6b7280; }
+    .legend-swatch { width:12px; height:12px; display:inline-block; margin-right:8px; border-radius:3px; vertical-align:middle; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Firebase boilerplate (unchanged) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    if (firebaseConfig) {
+      const app = initializeApp(firebaseConfig);
+      window.db = getFirestore(app);
+      const auth = getAuth(app);
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          window.userId = user.uid;
+        } else {
+          window.userId = "anon-" + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9));
+          if (initialAuthToken) {
+            try {
+              await signInWithCustomToken(auth, initialAuthToken);
+            } catch (e) {
+              console.error("Custom token failed:", e);
+              await signInAnonymously(auth);
+            }
+          } else {
+            await signInAnonymously(auth);
+          }
+        }
+        const el = document.getElementById('userIdDisplay');
+        if (el) el.textContent = window.userId;
+      });
+    } else {
+      // If firebase not set, still show a local anon id
+      window.userId = "anon-" + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9));
+      window.addEventListener('load', () => {
+        const el = document.getElementById('userIdDisplay');
+        if (el) el.textContent = window.userId;
+      });
+    }
+  </script>
+
+  <div class="container py-8">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold text-gray-900 mb-1">Causal Forecasting Simulation</h1>
+      <p class="text-sm text-gray-600 max-w-2xl mx-auto">Interactively explore linear vs nonlinear causal models, uncertainty bands, and residual diagnostics for advertising → sales.</p>
+      <p class="text-xs muted mt-2">User ID: <span id="userIdDisplay">Loading...</span></p>
+    </header>
+
+    <main class="grid lg:grid-cols-3 gap-6">
+      <!-- Controls -->
+      <aside class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-full flex flex-col justify-between">
+        <div>
+          <h2 class="text-lg font-bold mb-3">Simulation Controls</h2>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Scenario</label>
+            <div id="scenario-buttons" class="grid grid-cols-2 gap-2">
+              <button class="btn scenario-btn bg-gray-50 py-2 rounded-lg text-sm" data-scenario="linear">Linear Growth</button>
+              <button class="btn scenario-btn bg-gray-50 py-2 rounded-lg text-sm" data-scenario="saturation">Market Saturation</button>
+              <button class="btn scenario-btn bg-gray-50 py-2 rounded-lg text-sm" data-scenario="external_shock">External Shock</button>
+              <button class="btn scenario-btn bg-gray-50 py-2 rounded-lg text-sm" data-scenario="no_correlation">No Correlation</button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Model</label>
+            <div id="model-tabs" class="flex gap-2">
+              <button class="btn model-tab bg-white py-2 px-3 rounded-lg text-sm active" data-model="linear">Linear</button>
+              <button class="btn model-tab bg-white py-2 px-3 rounded-lg text-sm" data-model="log">Log</button>
+              <button class="btn model-tab bg-white py-2 px-3 rounded-lg text-sm" data-model="power">Power-law</button>
+              <button class="btn model-tab bg-white py-2 px-3 rounded-lg text-sm" data-model="logistic">Logistic</button>
+            </div>
+            <p class="text-xs muted mt-2">Toggle between candidate causal functions to compare fit & diagnostics.</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-sm font-semibold mb-2">Advertising Spend ($K)</label>
+            <div class="flex items-center gap-4">
+              <input id="ad-spend-slider" type="range" min="0" max="100" value="50" class="flex-grow">
+              <div class="chip" id="ad-spend-value">50</div>
+            </div>
+          </div>
+
+          <div class="mb-4 grid grid-cols-1 gap-2">
+            <label class="text-sm font-semibold">Components</label>
+            <div class="flex gap-2 items-center">
+              <input id="toggle-actual" type="checkbox" checked>
+              <label for="toggle-actual" class="text-sm">Show Actual Data</label>
+            </div>
+            <div class="flex gap-2 items-center">
+              <input id="toggle-errors" type="checkbox" checked>
+              <label for="toggle-errors" class="text-sm">Show Error Lines</label>
+            </div>
+            <div class="flex gap-2 items-center">
+              <input id="toggle-uncertainty" type="checkbox" checked>
+              <label for="toggle-uncertainty" class="text-sm">Show Uncertainty Band</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forecast display & explanation -->
+        <div class="bg-indigo-50 p-4 rounded-lg mt-4">
+          <div class="flex items-baseline justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-indigo-800" id="scenario-title">Scenario: Linear Growth</h3>
+              <p class="text-xs muted mt-1" id="scenario-short">A clear, positive relationship between advertising and sales.</p>
+            </div>
+            <div class="text-right">
+              <div class="text-xs muted">Forecast</div>
+              <div id="forecasted-sales" class="text-2xl font-bold text-indigo-600">$150.0M</div>
+            </div>
+          </div>
+
+          <div class="mt-3 text-xs text-indigo-700" id="scenario-explanation">
+            This is a perfect scenario for causal forecasting. A clear, positive relationship exists between advertising spend and sales. Try switching models to see how fit and residuals change.
+          </div>
+
+          <div class="mt-3 text-xs muted">
+            <div>Diagnostics: <span id="rmse">RMSE: —</span> • <span id="mean-res">Mean Residual: —</span></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Visualization -->
+      <section class="lg:col-span-2">
+        <div class="canvas-wrap">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-semibold">Sales vs Advertising Spend</h3>
+            <div class="muted text-sm">Toggle models and components to explore behavior</div>
+          </div>
+
+          <div style="position:relative;">
+            <canvas id="main-canvas"></canvas>
+          </div>
+
+          <canvas id="residuals-canvas" class="small"></canvas>
+
+          <!-- Legend -->
+          <div class="mt-3 flex gap-4 items-center text-sm">
+            <span><span class="legend-swatch" style="background:#16a34a"></span>Actual</span>
+            <span><span class="legend-swatch" style="background:#4f46e5"></span>Selected Model</span>
+            <span><span class="legend-swatch" style="background:#9b2c2c"></span>Errors</span>
+            <span><span class="legend-swatch" style="background:#f59e0b"></span>Uncertainty</span>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    /************************************************************************
+     * Improved interactive causal forecasting simulation
+     *
+     * Features:
+     * - Scenarios with actual data
+     * - Multiple candidate causal models: linear, log, power, logistic (saturation)
+     * - Bayesian-style uncertainty band (wider at high spend)
+     * - Residuals subplot with RMSE calculation
+     * - Toggles for showing actual, errors, uncertainty
+     ************************************************************************/
+
+    // DOM
+    const scenarioButtons = document.querySelectorAll('.scenario-btn');
+    const modelTabs = document.querySelectorAll('.model-tab');
+    const adSpendSlider = document.getElementById('ad-spend-slider');
+    const adSpendValue = document.getElementById('ad-spend-value');
+    const forecastedSalesEl = document.getElementById('forecasted-sales');
+    const scenarioTitleEl = document.getElementById('scenario-title');
+    const scenarioShortEl = document.getElementById('scenario-short');
+    const scenarioExplanationEl = document.getElementById('scenario-explanation');
+    const rmseEl = document.getElementById('rmse');
+    const meanResEl = document.getElementById('mean-res');
+    const toggleActual = document.getElementById('toggle-actual');
+    const toggleErrors = document.getElementById('toggle-errors');
+    const toggleUncertainty = document.getElementById('toggle-uncertainty');
+
+    // Canvas setup with DPR-safe rendering
+    const mainCanvas = document.getElementById('main-canvas');
+    const residCanvas = document.getElementById('residuals-canvas');
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(300, Math.round(rect.width * dpr));
+      canvas.height = Math.max(120, Math.round(rect.height * dpr));
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // reset transform + scale
+      return ctx;
+    }
+
+    let mainCtx = setupCanvas(mainCanvas);
+    let residCtx = setupCanvas(residCanvas);
+
+    // Example datasets (actuals) per scenario
+    const scenarios = {
+      linear: {
+        title: 'Linear Growth',
+        short: 'A strong linear relationship: every $K increases sales proportionally.',
+        explanation: 'Linear growth is where causal forecasting shines: simple functional form, low residuals across the range.',
+        data: [10,20,30,40,50,60,70,80,90].map(a => ({ad: a, sales: 50 + 2*a})),
+      },
+      saturation: {
+        title: 'Market Saturation',
+        short: 'Sales show diminishing returns and flatten at high spend — force of saturation.',
+        explanation: 'Here you see diminishing returns: a logistic (S-curve) or log model fits better than a straight line. The linear model overshoots at high ad spend — residuals increase.',
+        data: [
+          {ad:10,sales:12},{ad:20,sales:26},{ad:30,sales:42},
+          {ad:40,sales:60},{ad:50,sales:75},{ad:60,sales:85},
+          {ad:70,sales:92},{ad:80,sales:96},{ad:90,sales:98}
+        ],
+      },
+      external_shock: {
+        title: 'External Shock',
+        short: 'An unpredictable event changed outcomes independent of ad spend.',
+        explanation: 'A sudden competitor action or market shock can break the causal model if that factor is not included — causal models are blind to omitted external drivers.',
+        data: [
+          {ad:10,sales:105},{ad:20,sales:125},{ad:30,sales:140},
+          {ad:40,sales:160},{ad:50,sales:175},{ad:60,sales:190},
+          {ad:70,sales:110},{ad:80,sales:130},{ad:90,sales:150}
+        ],
+      },
+      no_correlation: {
+        title: 'No Correlation',
+        short: 'No meaningful relationship between spend and sales.',
+        explanation: 'If the assumed causal link is absent, the model will have large residuals and low explanatory power; forecasts are unreliable.',
+        data: [
+          {ad:10,sales:155},{ad:20,sales:148},{ad:30,sales:152},
+          {ad:40,sales:150},{ad:50,sales:160},{ad:60,sales:145},
+          {ad:70,sales:158},{ad:80,sales:153},{ad:90,sales:147}
+        ],
+      }
+    };
+
+    // Candidate model functions (take ad spend -> predicted sales)
+    const Models = {
+      linear: (x, params={intercept:50, slope:2}) => params.intercept + params.slope * x,
+      log: (x, params={a:30, b:22}) => params.a + params.b * Math.log(x + 1),
+      power: (x, params={A:8, alpha:0.9}) => params.A * Math.pow(x + 1, params.alpha),
+      logistic: (x, params={L:100, k:0.1, x0:45}) => params.L / (1 + Math.exp(-params.k * (x - params.x0)))
+    };
+
+    // Default model parameters (tune as needed)
+    const defaultParams = {
+      linear: { intercept: 50, slope: 2 },
+      log: { a: 18, b: 22 },
+      power: { A: 6, alpha: 0.95 },
+      logistic: { L: 100, k: 0.11, x0: 45 }
+    };
+
+    // State
+    let currentScenarioKey = 'linear';
+    let currentModelKey = 'linear';
+
+    // Utility: compute residuals and RMSE
+    function computeDiagnostics(actualData, predictFunc) {
+      const residuals = actualData.map(pt => {
+        const pred = predictFunc(pt.ad);
+        return {ad: pt.ad, actual: pt.sales, pred, res: pt.sales - pred};
+      });
+      const n = residuals.length;
+      const mse = residuals.reduce((s, r) => s + r.res*r.res, 0) / n;
+      const rmse = Math.sqrt(mse);
+      const meanRes = residuals.reduce((s, r) => s + r.res, 0) / n;
+      return {residuals, rmse, meanRes};
+    }
+
+    // Draw function (main + residuals)
+    function drawAll() {
+      mainCtx = setupCanvas(mainCanvas);
+      residCtx = setupCanvas(residCanvas);
+
+      const rect = mainCanvas.getBoundingClientRect();
+      const W = rect.width;
+      const H = rect.height;
+
+      const scenario = scenarios[currentScenarioKey];
+      const actual = scenario.data;
+      const modelFn = (x) => Models[currentModelKey](x, defaultParams[currentModelKey]);
+
+      // Forecasted value at slider
+      const forecastAd = Number(adSpendSlider.value);
+      const forecastSales = modelFn(forecastAd);
+
+      // Compute scales
+      const minX = 0, maxX = 100;
+      const allSales = actual.map(d => d.sales).concat([forecastSales]);
+      const minY = Math.min(...allSales) * 0.9;
+      const maxY = Math.max(...allSales) * 1.12;
+
+      const margin = 54;
+      const chartW = W - 2 * margin;
+      const chartH = H - 2 * margin;
+
+      const xScale = v => margin + (v - minX) / (maxX - minX) * chartW;
+      const yScale = v => H - margin - (v - minY) / (maxY - minY) * chartH;
+
+      // Clear
+      mainCtx.clearRect(0, 0, W, H);
+
+      // Axes
+      mainCtx.strokeStyle = '#e6e7eb';
+      mainCtx.lineWidth = 1;
+      mainCtx.beginPath();
+      // horizontal grid lines
+      for (let t=0; t<=4; t++){
+        const y = margin + t*(chartH/4);
+        mainCtx.moveTo(margin, y);
+        mainCtx.lineTo(margin + chartW, y);
+      }
+      mainCtx.stroke();
+
+      // Axis lines
+      mainCtx.strokeStyle = '#6b7280';
+      mainCtx.lineWidth = 1.2;
+      mainCtx.beginPath();
+      mainCtx.moveTo(margin, margin); mainCtx.lineTo(margin, H - margin);
+      mainCtx.moveTo(margin, H - margin); mainCtx.lineTo(margin + chartW, H - margin);
+      mainCtx.stroke();
+
+      // Titles
+      mainCtx.fillStyle = '#374151';
+      mainCtx.font = '14px Inter';
+      mainCtx.textAlign = 'center';
+      mainCtx.fillText('Advertising Spend ($K)', margin + chartW/2, H - 12);
+      mainCtx.save();
+      mainCtx.translate(14, margin + chartH/2);
+      mainCtx.rotate(-Math.PI / 2);
+      mainCtx.textAlign = 'center';
+      mainCtx.fillText('Sales ($M)', 0, 0);
+      mainCtx.restore();
+
+      // Uncertainty band (orange) if toggled
+      if (toggleUncertainty.checked) {
+        mainCtx.beginPath();
+        for (let i = minX; i <= maxX; i++) {
+          const pred = modelFn(i);
+          const band = 5 + 0.06 * i; // band grows with spend
+          const x = xScale(i), y = yScale(pred + band);
+          if (i === minX) mainCtx.moveTo(x, y); else mainCtx.lineTo(x, y);
+        }
+        for (let i = maxX; i >= minX; i--) {
+          const pred = modelFn(i);
+          const band = 5 + 0.06 * i;
+          const x = xScale(i), y = yScale(Math.max(0, pred - band));
+          mainCtx.lineTo(x, y);
+        }
+        mainCtx.closePath();
+        mainCtx.fillStyle = 'rgba(245,158,11,0.18)';
+        mainCtx.fill();
+      }
+
+      // Draw model line (selected)
+      mainCtx.beginPath();
+      for (let i = minX; i <= maxX; i++) {
+        const x = xScale(i), y = yScale(modelFn(i));
+        if (i === minX) mainCtx.moveTo(x,y); else mainCtx.lineTo(x,y);
+      }
+      mainCtx.lineWidth = 3;
+      mainCtx.strokeStyle = '#4f46e5';
+      mainCtx.stroke();
+
+      // Draw forecast point and vertical guide
+      const fx = xScale(forecastAd), fy = yScale(forecastSales);
+      mainCtx.setLineDash([6,6]);
+      mainCtx.beginPath();
+      mainCtx.moveTo(fx, fy); mainCtx.lineTo(fx, H - margin);
+      mainCtx.strokeStyle = '#4f46e5';
+      mainCtx.lineWidth = 1.2;
+      mainCtx.stroke();
+      mainCtx.setLineDash([]);
+
+      mainCtx.beginPath();
+      mainCtx.fillStyle = '#4f46e5';
+      mainCtx.arc(fx, fy, 6, 0, Math.PI*2);
+      mainCtx.fill();
+
+      // Draw actual points
+      if (toggleActual.checked) {
+        mainCtx.fillStyle = '#16a34a';
+        actual.forEach(pt => {
+          mainCtx.beginPath();
+          mainCtx.arc(xScale(pt.ad), yScale(pt.sales), 5, 0, Math.PI*2);
+          mainCtx.fill();
+        });
+      }
+
+      // Draw error lines
+      if (toggleErrors.checked && toggleActual.checked) {
+        mainCtx.setLineDash([4,4]);
+        mainCtx.lineWidth = 1;
+        mainCtx.strokeStyle = '#9b2c2c';
+        actual.forEach(pt => {
+          const px = xScale(pt.ad), py = yScale(pt.sales);
+          const pyPred = yScale(modelFn(pt.ad));
+          mainCtx.beginPath();
+          mainCtx.moveTo(px, py);
+          mainCtx.lineTo(px, pyPred);
+          mainCtx.stroke();
+        });
+        mainCtx.setLineDash([]);
+      }
+
+      // Legend small text on canvas
+      mainCtx.fillStyle = '#111827';
+      mainCtx.font = '12px Inter';
+      mainCtx.textAlign = 'left';
+      mainCtx.fillText(`${scenarios[currentScenarioKey].title} — model: ${currentModelKey}`, margin, margin - 18);
+
+      // Text label for forecasted value
+      mainCtx.fillStyle = '#111827';
+      mainCtx.font = '13px Inter';
+      mainCtx.textAlign = 'center';
+      mainCtx.fillText(`$${forecastSales.toFixed(1)}M`, fx, fy - 12);
+
+      // Diagnostics (residuals & RMSE)
+      const { residuals, rmse, meanRes } = computeDiagnostics(actual, modelFn);
+      rmseEl.textContent = `RMSE: ${rmse.toFixed(2)}`;
+      meanResEl.textContent = `Mean Res: ${meanRes.toFixed(2)}`;
+
+      // Draw residuals chart
+      drawResiduals(residCtx, residCanvas, residuals);
+
+      // Update right-side info
+      forecastedSalesEl.textContent = `$${forecastSales.toFixed(1)}M`;
+      scenarioTitleEl.textContent = `Scenario: ${scenarios[currentScenarioKey].title}`;
+      scenarioShortEl.textContent = scenarios[currentScenarioKey].short;
+      scenarioExplanationEl.textContent = scenarios[currentScenarioKey].explanation;
+    }
+
+    function drawResiduals(ctx, canvas, residuals) {
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width, H = rect.height;
+      const margin = 36;
+      const chartW = W - margin*2, chartH = H - margin*2;
+      ctx.clearRect(0,0,W,H);
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
+      ctx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
+      ctx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
+      // simpler: just draw with 1x coordinates (canvas already size-corrected)
+      ctx.setTransform(window.devicePixelRatio || 1,0,0,window.devicePixelRatio || 1,0,0);
+      // fallback to simple drawing using logical size:
+      ctx.setTransform(1,0,0,1,0,0);
+      ctx.clearRect(0,0,W,H);
+
+      // compute x positions from sorted ad
+      const xs = residuals.map(r => r.ad);
+      const minX = 0, maxX = 100;
+      const minRes = Math.min(...residuals.map(r => r.res))*1.1;
+      const maxRes = Math.max(...residuals.map(r => r.res))*1.1;
+      const yMargin = 10;
+
+      const xScale = v => margin + (v - minX) / (maxX - minX) * chartW;
+      const yScale = v => margin + (1 - (v - minRes) / (maxRes - minRes)) * chartH;
+
+      // Baseline
+      ctx.strokeStyle = '#d1d5db';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      const zeroY = yScale(0);
+      ctx.moveTo(margin, zeroY);
+      ctx.lineTo(margin + chartW, zeroY);
+      ctx.stroke();
+
+      // residuals line
+      ctx.beginPath();
+      ctx.strokeStyle = '#9b2c2c';
+      ctx.lineWidth = 2;
+      residuals.forEach((r, i) => {
+        const x = xScale(r.ad), y = yScale(r.res);
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+
+      // points
+      ctx.fillStyle = '#9b2c2c';
+      residuals.forEach(r => {
+        ctx.beginPath();
+        ctx.arc(xScale(r.ad), yScale(r.res), 3.5, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      // Labels
+      ctx.fillStyle = '#374151';
+      ctx.font = '12px Inter';
+      ctx.fillText('Residuals (Actual - Predicted)', margin, 14);
+    }
+
+    // Interaction handlers
+    scenarioButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        scenarioButtons.forEach(x=>x.classList.remove('active'));
+        btn.classList.add('active');
+        currentScenarioKey = btn.dataset.scenario;
+        drawAll();
+      });
+    });
+
+    modelTabs.forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        modelTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentModelKey = tab.dataset.model;
+        drawAll();
+      });
+    });
+
+    adSpendSlider.addEventListener('input', () => {
+      adSpendValue.textContent = adSpendSlider.value;
+      drawAll();
+    });
+
+    [toggleActual, toggleErrors, toggleUncertainty].forEach(el => el.addEventListener('change', drawAll));
+
+    // initial activation
+    document.querySelector(`[data-scenario="${currentScenarioKey}"]`).classList.add('active');
+    document.querySelector(`[data-model="${currentModelKey}"]`).classList.add('active');
+    adSpendValue.textContent = adSpendSlider.value;
+
+    // initial draw after load + small timeout to ensure sizes are right
+    window.addEventListener('load', () => setTimeout(drawAll, 50));
+    window.addEventListener('resize', () => {
+      // throttle
+      clearTimeout(window.__resizeTimer);
+      window.__resizeTimer = setTimeout(drawAll, 120);
+    });
+  </script>
+</body>
+</html>

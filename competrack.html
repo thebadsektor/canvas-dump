@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Competitor Tracking Agent Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chosen Palette: Slate & Cyan -->
+    <!-- Application Structure Plan: The application is designed as a single-page, vertical-scrolling tutorial with a fixed sidebar for navigation. This structure was chosen because it provides a clear, linear learning path for a technical topic, while the sidebar allows users to jump to specific sections of interest. The flow progresses logically from 'Why' (Introduction), to 'What' (The Toolkit), to 'How' (Interactive Flow & Code), and finally to 'What's Next' (Advanced Concepts). Interactive elements like code tabs, an interactive process diagram, and accordions are used to break down complex information, maintain user engagement, and cater to different learning preferences, making the content more digestible than a static article. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Overall agent workflow. Goal: Organize/Inform. Viz/Method: Donut Chart (Chart.js) showing effort distribution (Setup, Scraping, AI, Storage). Interaction: Hover tooltips. Justification: Provides a quick quantitative overview of the agent's tasks.
+        - Report Info: The agent's step-by-step logic. Goal: Organize/Explain. Viz/Method: Interactive Diagram (HTML/CSS/JS). Interaction: Clicking a step reveals details and relevant code. Justification: Transforms a passive list of steps into an engaging, explorable process map, enhancing comprehension.
+        - Report Info: Code examples in different languages. Goal: Instruct/Enable. Viz/Method: Tabbed Code Blocks (HTML/CSS/JS). Interaction: Tabs switch between Python and JS snippets; a copy button is provided. Justification: Caters to a wider developer audience and improves usability by preventing clutter.
+        - Report Info: Advanced topics (error handling, deployment). Goal: Inform. Viz/Method: Accordion UI (HTML/CSS/JS). Interaction: Clicking to expand/collapse content. Justification: Hides supplementary details by default, keeping the main learning path clean and focused. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .code-block {
+            position: relative;
+            background-color: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: #334155;
+            color: #94a3b8;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .copy-btn:hover { background-color: #475569; color: #cbd5e1; }
+        .nav-link { transition: all 0.2s; }
+        .nav-link.active {
+            color: #06b6d4;
+            background-color: #ecfeff;
+            border-left-color: #06b6d4;
+        }
+        .flow-node {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .flow-node.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.5);
+            border-color: #06b6d4;
+        }
+        .tab.active {
+            background-color: #06b6d4;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700">
+    <div class="flex">
+        <aside id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 p-6 flex-col justify-between hidden lg:flex">
+            <div>
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="bg-cyan-500 p-2 rounded-lg">
+                        <i class="fas fa-robot text-white text-xl"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-slate-800">AI Agent Guide</h1>
+                </div>
+                <nav id="desktop-nav" class="flex flex-col space-y-2">
+                </nav>
+            </div>
+             <div class="text-xs text-slate-400">
+                <p>&copy; 2025 AI Guides Inc.</p>
+            </div>
+        </aside>
+
+        <button id="menu-btn" class="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-md shadow-lg">
+            <i class="fas fa-bars text-slate-600"></i>
+        </button>
+
+        <div id="mobile-menu" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden">
+             <aside class="absolute top-0 left-0 h-full w-64 bg-white border-r border-slate-200 p-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-10">
+                        <div class="bg-cyan-500 p-2 rounded-lg">
+                            <i class="fas fa-robot text-white text-xl"></i>
+                        </div>
+                        <h1 class="text-xl font-bold text-slate-800">AI Agent Guide</h1>
+                    </div>
+                    <nav id="mobile-nav" class="flex flex-col space-y-2">
+                    </nav>
+                </div>
+                 <div class="text-xs text-slate-400">
+                    <p>&copy; 2025 AI Guides Inc.</p>
+                </div>
+            </aside>
+        </div>
+
+
+        <main class="lg:ml-64 flex-1 p-6 md:p-12">
+            <section id="introduction" class="min-h-screen pt-16 lg:pt-0">
+                <span class="text-cyan-600 font-semibold">Step-by-Step Guide</span>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mt-2 mb-6 leading-tight">Build an AI Agent to Track Your Competitors</h1>
+                <p class="text-lg text-slate-600 max-w-3xl mb-12">Learn how to create a powerful, autonomous AI agent that monitors your competitors' websites for changes, scrapes key information, and delivers actionable insights. This guide leverages modern tools like Stagehand for agent orchestration and Browserbase for reliable web automation, making the process simpler than ever.</p>
+                
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Agent Workflow Overview</h2>
+                    <p class="text-slate-500 mb-6">This chart illustrates the typical distribution of tasks within the agent's operation. While scraping is a core function, significant effort also goes into setting up the environment, processing the data with AI, and storing the results effectively.</p>
+                    <div class="chart-container relative h-64 md:h-80 w-full max-w-md mx-auto">
+                        <canvas id="workflowChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="toolkit" class="min-h-screen">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">The Modern Toolkit</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mb-12">Building a robust web automation agent traditionally involved complex setups. These modern tools abstract away the most difficult parts, letting you focus on the agent's logic and business value.</p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                        <div class="flex items-center gap-4 mb-4">
+                             <div class="bg-indigo-100 p-3 rounded-lg"><i class="fas fa-cogs text-2xl text-indigo-600"></i></div>
+                            <h3 class="text-2xl font-bold text-slate-800">Stagehand</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">Stagehand is an open-source framework for building and managing AI agents. It provides the structure for defining your agent's goals, memory, and tools, effectively acting as the "brain" of the operation. It orchestrates the entire process from start to finish.</p>
+                        <ul class="space-y-2 text-slate-600">
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-cyan-500 mt-1"></i><span>Defines agent's high-level goals.</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-cyan-500 mt-1"></i><span>Manages tools and state.</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-cyan-500 mt-1"></i><span>Provides context memory for the agent.</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="bg-emerald-100 p-3 rounded-lg"><i class="fas fa-globe text-2xl text-emerald-600"></i></div>
+                            <h3 class="text-2xl font-bold text-slate-800">Browserbase</h3>
+                        </div>
+                        <p class="text-slate-600 mb-4">Browserbase provides a cloud-based, headless browser infrastructure. It handles all the complexities of running a browser at scale: managing proxies, solving CAPTCHAs, and ensuring your scripts run in a stable environment. Your agent connects to Browserbase to perform web tasks.</p>
+                         <ul class="space-y-2 text-slate-600">
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-cyan-500 mt-1"></i><span>Eliminates browser setup and maintenance.</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-cyan-500 mt-1"></i><span>Handles proxies and CAPTCHAs automatically.</span></li>
+                            <li class="flex items-start gap-3"><i class="fas fa-check-circle text-cyan-500 mt-1"></i><span>Provides a simple API for browser automation.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="flow" class="min-h-screen">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Interactive Agent Process</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mb-12">Click on each step in the diagram below to understand its purpose and see the corresponding code. This visual flow represents the core logic your AI agent will execute during a typical run to monitor a single competitor page.</p>
+                
+                <div class="lg:flex gap-8">
+                    <div class="flex-1 flex flex-col items-center justify-center space-y-4 mb-8 lg:mb-0">
+                        <div id="flow-node-1" class="flow-node w-full max-w-md bg-white p-4 rounded-lg shadow-md border-2 border-transparent text-center">
+                            <span class="text-cyan-500 font-bold">Step 1</span>
+                            <p class="font-semibold text-slate-800">Define Goal & Target</p>
+                        </div>
+                        <i class="fas fa-arrow-down text-slate-400 text-2xl"></i>
+                         <div id="flow-node-2" class="flow-node w-full max-w-md bg-white p-4 rounded-lg shadow-md border-2 border-transparent text-center">
+                            <span class="text-cyan-500 font-bold">Step 2</span>
+                            <p class="font-semibold text-slate-800">Connect to Secure Browser</p>
+                        </div>
+                        <i class="fas fa-arrow-down text-slate-400 text-2xl"></i>
+                         <div id="flow-node-3" class="flow-node w-full max-w-md bg-white p-4 rounded-lg shadow-md border-2 border-transparent text-center">
+                            <span class="text-cyan-500 font-bold">Step 3</span>
+                            <p class="font-semibold text-slate-800">Scrape Web Page Content</p>
+                        </div>
+                         <i class="fas fa-arrow-down text-slate-400 text-2xl"></i>
+                         <div id="flow-node-4" class="flow-node w-full max-w-md bg-white p-4 rounded-lg shadow-md border-2 border-transparent text-center">
+                            <span class="text-cyan-500 font-bold">Step 4</span>
+                            <p class="font-semibold text-slate-800">Analyze & Summarize Data</p>
+                        </div>
+                    </div>
+
+                    <div id="flow-details" class="flex-1 bg-white p-8 rounded-2xl shadow-lg border border-slate-200 min-h-[400px]">
+                        <h3 id="flow-title" class="text-2xl font-bold text-slate-800 mb-2">Select a step</h3>
+                        <p id="flow-description" class="text-slate-600 mb-6">Click a step on the left to see details here.</p>
+                        <div id="flow-code" class="hidden">
+                             <div class="flex items-center justify-between mb-2">
+                                <div id="code-tabs" class="flex space-x-1 bg-slate-200 p-1 rounded-md">
+                                    <button data-lang="python" class="tab px-3 py-1 text-sm rounded-md text-slate-600">Python</button>
+                                    <button data-lang="javascript" class="tab px-3 py-1 text-sm rounded-md text-slate-600">JavaScript</button>
+                                </div>
+                            </div>
+                            <div class="code-block">
+                                <button class="copy-btn">Copy</button>
+                                <pre><code id="code-content"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="advanced" class="min-h-screen">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Advanced Concepts & Deployment</h2>
+                <p class="text-lg text-slate-600 max-w-3xl mb-12">Once your agent is working, consider these real-world challenges and opportunities to make it more robust, reliable, and valuable.</p>
+                <div id="accordion" class="space-y-4">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sections = [
+                { id: 'introduction', name: 'Introduction', icon: 'fa-home' },
+                { id: 'toolkit', name: 'The Toolkit', icon: 'fa-tools' },
+                { id: 'flow', name: 'Interactive Flow', icon: 'fa-project-diagram' },
+                { id: 'advanced', name: 'Advanced Concepts', icon: 'fa-rocket' },
+            ];
+
+            const desktopNav = document.getElementById('desktop-nav');
+            const mobileNav = document.getElementById('mobile-nav');
+            
+            sections.forEach(section => {
+                const link = `
+                    <a href="#${section.id}" class="nav-link text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center gap-3 px-4 py-2 rounded-md border-l-4 border-transparent">
+                        <i class="fas ${section.icon} w-5 text-center"></i>
+                        <span>${section.name}</span>
+                    </a>`;
+                desktopNav.innerHTML += link;
+                mobileNav.innerHTML += link;
+            });
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('main section');
+
+            function updateActiveLink() {
+                let currentSection = '';
+                contentSections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (window.scrollY >= sectionTop - 60) {
+                        currentSection = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${currentSection}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            window.addEventListener('scroll', updateActiveLink);
+            updateActiveLink();
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if(window.innerWidth < 1024) {
+                         document.getElementById('mobile-menu').classList.add('hidden');
+                    }
+                });
+            });
+
+            const menuBtn = document.getElementById('menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            mobileMenu.addEventListener('click', (e) => {
+                if (e.target === mobileMenu) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+
+
+            const ctx = document.getElementById('workflowChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Scraping Logic', 'AI Processing', 'Setup & Orchestration', 'Data Storage'],
+                    datasets: [{
+                        label: 'Task Distribution',
+                        data: [40, 25, 20, 15],
+                        backgroundColor: [
+                            '#06b6d4',
+                            '#6366f1',
+                            '#84cc16',
+                            '#f97316'
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                             labels: {
+                                color: '#475569',
+                                font: {
+                                    size: 14,
+                                    family: "'Inter', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const flowData = {
+                'flow-node-1': {
+                    title: 'Define Goal & Target',
+                    description: "The first step is to provide the agent with a clear, high-level objective. In Stagehand, this is done via a prompt that outlines the mission, such as monitoring a specific competitor's pricing page.",
+                    code: {
+                        python: `# Using the Stagehand SDK
+from stagehand import Agent
+
+agent = Agent.from_prompt(
+    "You are a competitor analysis agent. Your goal is to monitor "
+    "the pricing page of 'https://competitor.com/pricing' and "
+    "report any changes in their subscription plans."
+)`,
+                        javascript: `// Using the Stagehand JS library
+import { Agent } from 'stagehand-sdk';
+
+const agent = Agent.fromPrompt(
+  "You are a competitor analysis agent. Your goal is to monitor " +
+  "the pricing page of 'https://competitor.com/pricing' and " +
+  "report any changes in their subscription plans."
+);`
+                    }
+                },
+                'flow-node-2': {
+                    title: 'Connect to Secure Browser',
+                    description: "The agent uses a tool to connect to a Browserbase cloud browser. This avoids local setup issues and IP blocks. The API key is securely managed, and the connection provides a session for web automation tasks.",
+                    code: {
+                        python: `# Tool definition for the agent
+from browserbase import Browserbase
+
+def get_browser_session(api_key):
+    browserbase = Browserbase(api_key=api_key)
+    return browserbase.get_session()
+
+# The agent would call this tool when needed`,
+                        javascript: `// Tool definition for the agent
+import { Browserbase } from 'browserbase-sdk';
+
+async function getBrowserSession(apiKey) {
+  const browserbase = new Browserbase({ apiKey });
+  const session = await browserbase.getSession();
+  return session;
+}
+
+// The agent would call this tool when needed`
+                    }
+                },
+                'flow-node-3': {
+                    title: 'Scrape Web Page Content',
+                    description: "Using the browser session, the agent loads the target URL and extracts the relevant HTML content. This example focuses on grabbing the text content of the entire page for simplicity, which will be analyzed later.",
+                    code: {
+                        python: `# Using Playwright within Browserbase
+def scrape_page_content(session, url):
+    page = session.new_page()
+    page.goto(url)
+    content = page.locator('body').inner_text()
+    page.close()
+    return content
+
+# content = scrape_page_content(session, 'https://competitor.com/pricing')`,
+                        javascript: `// Using Playwright within Browserbase
+async function scrapePageContent(session, url) {
+  const page = await session.newPage();
+  await page.goto(url);
+  const content = await page.locator('body').innerText();
+  await page.close();
+  return content;
+}
+
+// const content = await scrapePageContent(session, 'https://competitor.com/pricing');`
+                    }
+                },
+                'flow-node-4': {
+                    title: 'Analyze & Summarize Data',
+                    description: "The scraped text is passed back to the agent's language model. The agent, guided by its initial prompt, analyzes this text to find the key information (like pricing tiers) and formats it into a structured summary.",
+                    code: {
+                        python: `# Stagehand processes the scraped content
+scraped_content = "..." # Content from Step 3
+
+# The agent's LLM will process this based on the original prompt
+summary = agent.run(
+    f"Analyze the following content and summarize the pricing plans: {scraped_content}"
+)
+
+print(summary)
+# Output: {'plan': 'Basic', 'price': '$10/mo', 'features': ['...']}`,
+                        javascript: `// Stagehand processes the scraped content
+const scrapedContent = "..."; // Content from Step 3
+
+// The agent's LLM will process this based on the original prompt
+const summary = await agent.run(
+  \`Analyze the following content and summarize the pricing plans: \${scrapedContent}\`
+);
+
+console.log(summary);
+// Output: { plan: 'Basic', price: '$10/mo', features: ['...'] }`
+                    }
+                }
+            };
+
+            const flowNodes = document.querySelectorAll('.flow-node');
+            const flowTitle = document.getElementById('flow-title');
+            const flowDescription = document.getElementById('flow-description');
+            const flowCode = document.getElementById('flow-code');
+            const codeContent = document.getElementById('code-content');
+            const codeTabs = document.getElementById('code-tabs');
+            let activeLang = 'python';
+
+            function updateFlowDetails(nodeId) {
+                flowNodes.forEach(n => n.classList.remove('active'));
+                document.getElementById(nodeId).classList.add('active');
+
+                const data = flowData[nodeId];
+                flowTitle.textContent = data.title;
+                flowDescription.textContent = data.description;
+                flowCode.classList.remove('hidden');
+
+                updateCodeContent(data.code[activeLang]);
+            }
+
+            function updateCodeContent(code) {
+                codeContent.textContent = code;
+            }
+
+            flowNodes.forEach(node => {
+                node.addEventListener('click', () => updateFlowDetails(node.id));
+            });
+
+            codeTabs.addEventListener('click', (e) => {
+                if(e.target.tagName === 'BUTTON') {
+                    activeLang = e.target.dataset.lang;
+                    document.querySelectorAll('#code-tabs button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    
+                    const activeNodeId = document.querySelector('.flow-node.active')?.id;
+                    if(activeNodeId) {
+                        const data = flowData[activeNodeId];
+                        updateCodeContent(data.code[activeLang]);
+                    }
+                }
+            });
+
+            document.querySelector('.copy-btn').addEventListener('click', (e) => {
+                navigator.clipboard.writeText(codeContent.textContent);
+                const btn = e.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = originalText; }, 2000);
+            });
+
+            document.querySelector('#code-tabs button[data-lang="python"]').classList.add('active');
+            updateFlowDetails('flow-node-1');
+            
+            const accordionData = [
+                {
+                    title: 'Robust Error Handling',
+                    content: "Websites change. Your agent needs to handle failures gracefully. Implement try-catch blocks for network requests and parsing logic. Add a retry mechanism with exponential backoff for transient network issues. Log errors to a monitoring service to get alerted when an agent run fails, so you can debug the issue promptly.",
+                    icon: 'fa-exclamation-triangle'
+                },
+                {
+                    title: 'Scheduling & Deployment',
+                    content: "An agent is most useful when it runs automatically. Deploy your agent script to a cloud function (e.g., AWS Lambda, Google Cloud Functions) and use a scheduler (e.g., Amazon EventBridge, Cloud Scheduler) to trigger it on a recurring basis (e.g., daily, weekly). This creates a fully automated monitoring system.",
+                    icon: 'fa-calendar-alt'
+                },
+                {
+                    title: 'Managing State & History',
+                    content: "To detect changes, your agent needs to remember what it saw last time. After each successful run, store the scraped and summarized data in a database (like Firestore or a simple JSON file in S3). On the next run, the agent can fetch the previous state, compare it with the new data, and identify exactly what changed.",
+                    icon: 'fa-history'
+                },
+                 {
+                    title: 'Handling Edge Cases & Anti-Scraping',
+                    content: "Competitors might use techniques to block scrapers. Browserbase handles many of these, but you should also consider randomizing request timing to mimic human behavior. Be prepared for different page layouts (e.g., A/B tests) and make your selectors flexible enough to handle minor HTML structure changes without breaking.",
+                    icon: 'fa-shield-alt'
+                }
+            ];
+            
+            const accordionContainer = document.getElementById('accordion');
+            accordionData.forEach((item, index) => {
+                const element = document.createElement('div');
+                element.classList.add('bg-white', 'rounded-xl', 'shadow-md', 'border', 'border-slate-200', 'overflow-hidden');
+                element.innerHTML = `
+                    <button class="w-full text-left p-6 flex justify-between items-center hover:bg-slate-50 focus:outline-none">
+                        <div class="flex items-center gap-4">
+                            <i class="fas ${item.icon} text-cyan-500 text-xl w-6 text-center"></i>
+                            <span class="font-semibold text-lg text-slate-800">${item.title}</span>
+                        </div>
+                        <i class="fas fa-chevron-down transform transition-transform text-slate-500"></i>
+                    </button>
+                    <div class="accordion-content max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                        <p class="p-6 pt-0 text-slate-600">${item.content}</p>
+                    </div>
+                `;
+                accordionContainer.appendChild(element);
+                
+                const button = element.querySelector('button');
+                const content = element.querySelector('.accordion-content');
+                const icon = element.querySelector('.fa-chevron-down');
+
+                button.addEventListener('click', () => {
+                    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+                    if (isOpen) {
+                        content.style.maxHeight = '0px';
+                        icon.classList.remove('rotate-180');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.classList.add('rotate-180');
+                    }
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reinforcement Learning for Adaptive Client Scheduling</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: A single-page application with a top navigation bar for quick access to thematic sections: 1) A high-level Vision/Intro. 2) An interactive RL Engine Simulation to demonstrate the core concept. 3) A Data & Landscape section combining an interactive literature mind map and a market analysis. 4) A quantitative Impact & Insights section with filterable charts. 5) A clear User Journey/Scenarios walkthrough. This structure prioritizes user engagement and understanding by breaking down a complex topic into logical, explorable modules, moving from high-level concepts to interactive demonstration and finally to quantitative results. -->
+    <!-- Visualization & Content Choices: 
+        - Vision: Goal: Inform. Method: Text with a simple HTML/CSS feedback loop diagram. Justification: Sets context.
+        - RL Simulation: Goal: Demonstrate. Method: Interactive calendar grid (HTML/JS) responding to user-triggered events. Justification: Makes the abstract RL process tangible.
+        - Literature: Goal: Organize. Method: HTML/CSS mind map with clickable nodes. Justification: More engaging than a static list.
+        - Market Gap: Goal: Compare. Method: HTML table. Justification: Clear, direct comparison.
+        - Impact/KPIs: Goal: Analyze. Method: Interactive Bar/Line charts (Chart.js). Interaction: Dropdown filters. Justification: Provides data-driven proof of value.
+        - User Journey: Goal: Explain. Method: HTML/CSS process flow diagram. Justification: Visually walks through practical scenarios.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF7;
+            color: #4A4A4A;
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #4DB6AC;
+            border-bottom-color: #4DB6AC;
+        }
+        .section-card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .literature-node {
+            cursor: pointer;
+            border: 2px solid #E0E0E0;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            background-color: #FAFAFA;
+        }
+        .literature-node:hover {
+            border-color: #4DB6AC;
+            background-color: #F0F7F6;
+        }
+        .literature-node.active {
+            border-color: #4DB6AC;
+            background-color: #E0F2F1;
+        }
+        .scenario-step {
+            transition: all 0.3s ease;
+            border-left: 4px solid #E0E0E0;
+        }
+        .scenario-step:hover {
+            background-color: #F0F7F6;
+            border-left-color: #F08080;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">Adaptive Scheduling</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#vision" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Vision</a>
+                        <a href="#simulation" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">RL Simulation</a>
+                        <a href="#landscape" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Landscape</a>
+                        <a href="#impact" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Impact</a>
+                        <a href="#journey" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">User Journey</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm">
+                        <option value="#vision">Vision</option>
+                        <option value="#simulation">RL Simulation</option>
+                        <option value="#landscape">Landscape</option>
+                        <option value="#impact">Impact</option>
+                        <option value="#journey">User Journey</option>
+                    </select>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        
+        <section id="vision" class="scroll-mt-20">
+            <div class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">The Vision: Self-Optimizing Schedules</h2>
+                <p class="text-lg text-gray-600 mb-6">This project introduces a dynamic scheduling system powered by Reinforcement Learning (RL). Traditional schedulers are static and inefficient, failing to adapt to real-world complexities like last-minute cancellations or fluctuating demand. Our system learns from client behavior and environmental cues to optimize appointments, maximize resource utilization, and minimize idle time, creating a resilient and intelligent scheduling ecosystem.</p>
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-xl font-semibold text-center text-gray-800 mb-4">The Reinforcement Learning Feedback Loop</h3>
+                    <div class="flex flex-col md:flex-row items-center justify-around space-y-4 md:space-y-0 md:space-x-4">
+                        <div class="text-center">
+                            <div class="p-4 bg-teal-100 rounded-full inline-block">
+                                <span class="text-3xl">👤</span>
+                            </div>
+                            <p class="mt-2 font-semibold">Environment</p>
+                            <p class="text-sm text-gray-500">(Client Actions)</p>
+                        </div>
+                        <div class="text-2xl text-teal-500 font-bold transform rotate-90 md:rotate-0">→</div>
+                         <div class="text-center">
+                            <div class="p-4 bg-teal-100 rounded-full inline-block">
+                                <span class="text-3xl">🤖</span>
+                            </div>
+                            <p class="mt-2 font-semibold">Agent</p>
+                            <p class="text-sm text-gray-500">(RL Scheduler)</p>
+                        </div>
+                        <div class="text-2xl text-teal-500 font-bold transform rotate-90 md:rotate-0">→</div>
+                         <div class="text-center">
+                            <div class="p-4 bg-teal-100 rounded-full inline-block">
+                                <span class="text-3xl">🗓️</span>
+                            </div>
+                            <p class="mt-2 font-semibold">Action</p>
+                            <p class="text-sm text-gray-500">(Optimize Schedule)</p>
+                        </div>
+                        <div class="text-2xl text-teal-500 font-bold transform rotate-90 md:rotate-0">→</div>
+                         <div class="text-center">
+                            <div class="p-4 bg-teal-100 rounded-full inline-block">
+                                <span class="text-3xl">🏆</span>
+                            </div>
+                            <p class="mt-2 font-semibold">Reward</p>
+                            <p class="text-sm text-gray-500">(Efficiency Gain)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="simulation" class="scroll-mt-20 mt-12">
+            <div class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Live RL Scheduling Simulation</h2>
+                <p class="text-lg text-gray-600 mb-6">Interact with a simplified model of our adaptive scheduler. Trigger events and watch the RL agent dynamically reorganize appointments to optimize the day's efficiency. The agent's goal is to group appointments closely and fill gaps created by cancellations.</p>
+                
+                <div class="flex flex-wrap gap-4 mb-6 justify-center">
+                    <button id="sim-book-vip" class="px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-75">Book VIP Appointment</button>
+                    <button id="sim-cancellation" class="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75">Trigger Cancellation</button>
+                    <button id="sim-walk-in" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75">Handle Walk-In</button>
+                    <button id="sim-reset" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75">Reset Day</button>
+                    <button id="gemini-client-message" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 hidden">✨ Generate Client Message</button>
+                </div>
+
+                <div id="schedule-log" class="text-center mb-4 p-3 bg-gray-100 rounded-lg h-12 text-gray-700 font-medium transition-all duration-300">Log: Initial schedule loaded.</div>
+                <div id="gemini-message-container" class="mt-4 p-4 bg-gray-50 rounded-lg hidden">
+                    <h3 class="font-semibold text-lg">AI-Drafted Message</h3>
+                    <p id="gemini-message" class="text-sm text-gray-600 mt-2"></p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-bold text-lg mb-2 text-center">Resource A</h3>
+                            <div id="schedule-a" class="grid grid-cols-1 gap-1"></div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2 text-center">Resource B</h3>
+                            <div id="schedule-b" class="grid grid-cols-1 gap-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="landscape" class="scroll-mt-20 mt-12">
+             <div class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Data & Research Landscape</h2>
+                <p class="text-lg text-gray-600 mb-8">Understanding the foundation of this project requires looking at existing research, market solutions, and available data. This section provides an interactive overview of the academic literature, identifies gaps in current products, and lists open-source datasets that can be used to train and validate RL scheduling models.</p>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Interactive Literature Map</h3>
+                        <div class="space-y-4">
+                            <div class="literature-node" data-id="lit1">
+                                <p class="font-bold">Deep Reinforcement Learning for Appointment Scheduling</p>
+                                <p class="text-sm text-gray-500">Focus: Q-learning application | Value: 15% reduction in idle time</p>
+                            </div>
+                            <div class="literature-node" data-id="lit2">
+                                <p class="font-bold">Multi-Agent RL for Resource Allocation</p>
+                                <p class="text-sm text-gray-500">Focus: Collaborative agents | Value: 25% increase in throughput</p>
+                            </div>
+                             <div class="literature-node" data-id="lit3">
+                                <p class="font-bold">A Survey of Dynamic Scheduling Problems</p>
+                                <p class="text-sm text-gray-500">Focus: Problem formalization | Value: Defines state-action space</p>
+                            </div>
+                        </div>
+                        <div id="literature-details" class="mt-4 p-4 bg-gray-50 rounded-lg min-h-[100px] text-gray-700">
+                            Click on a paper to see details.
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">Market Analysis & Tech Gaps</h3>
+                         <div class="overflow-x-auto">
+                            <table id="market-table" class="w-full text-left border-collapse">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="p-3 font-semibold text-sm">Product</th>
+                                        <th class="p-3 font-semibold text-sm">Approach</th>
+                                        <th class="p-3 font-semibold text-sm text-red-600">Identified Gap</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b hover:bg-gray-50 cursor-pointer" data-product="Calendly">
+                                        <td class="p-3">Calendly</td>
+                                        <td class="p-3">Rule-Based Availability</td>
+                                        <td class="p-3 text-red-600">Not adaptive; no learning from cancellations.</td>
+                                    </tr>
+                                    <tr class="border-b hover:bg-gray-50 cursor-pointer" data-product="Acuity Scheduling">
+                                        <td class="p-3">Acuity Scheduling</td>
+                                        <td class="p-3">Template-Based</td>
+                                        <td class="p-3 text-red-600">Static resource allocation; cannot self-optimize.</td>
+                                    </tr>
+                                    <tr class="border-b hover:bg-gray-50 cursor-pointer" data-product="Skedulo">
+                                        <td class="p-3">Skedulo</td>
+                                        <td class="p-3">Manual/Assisted Dispatch</td>
+                                        <td class="p-3 text-red-600">Relies on human intervention for exceptions.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button id="gemini-brainstorm-button" class="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 hidden">✨ Brainstorm Solutions</button>
+                        </div>
+                        <div id="gemini-brainstorm-solutions" class="mt-4 p-4 bg-gray-50 rounded-lg hidden">
+                            <h3 class="font-semibold text-lg">AI-Brainstormed Solutions</h3>
+                            <div id="gemini-solutions-content" class="text-sm text-gray-600 mt-2"></div>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-gray-800 mt-8 mb-4">Open-Source Datasets</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li><span class="font-semibold">Medical Appointment No-Shows:</span> Kaggle dataset with 100k+ records detailing patient data and show/no-show status.</li>
+                            <li><span class="font-semibold">Open-source CRM Data:</span> Synthetic datasets mimicking customer interaction patterns, useful for predicting booking demand.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="impact" class="scroll-mt-20 mt-12">
+            <div class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Measurable Impact & Insights</h2>
+                <p class="text-lg text-gray-600 mb-6">The true value of an adaptive system is measured by its performance improvements. This section visualizes the simulated impact of our RL-based scheduler against traditional, static methods across key performance indicators (KPIs). Use the filter to explore how the system performs under different business scenarios.</p>
+                <div class="mb-6 flex justify-center">
+                    <select id="kpi-filter" class="rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500">
+                        <option value="baseline">Baseline Scenario</option>
+                        <option value="high_cancellation">High Cancellation Rate</option>
+                        <option value="high_demand">Peak Demand Season</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container">
+                        <canvas id="kpiChart"></canvas>
+                    </div>
+                     <div class="chart-container">
+                        <canvas id="efficiencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="journey" class="scroll-mt-20 mt-12">
+            <div class="section-card p-6 md:p-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Optimized User Journey Scenarios</h2>
+                <p class="text-lg text-gray-600 mb-8">This capstone project's core features are best understood through practical scenarios. The following user journey illustrates how the adaptive scheduling system intelligently handles common situations, showcasing its ability to dynamically manage appointments, reallocate resources, and communicate effectively with clients without manual oversight.</p>
+                
+                <div class="relative pl-8">
+                    <div class="absolute top-0 bottom-0 left-4 w-0.5 bg-gray-200"></div>
+                    <div class="space-y-12">
+                        <div class="relative scenario-step pl-8 py-4">
+                            <div class="absolute -left-2.5 top-5 w-5 h-5 bg-white border-4 border-teal-500 rounded-full"></div>
+                            <h3 class="text-xl font-semibold text-gray-800">Scenario 1: Proactive Gap Filling</h3>
+                            <p class="text-gray-600 mt-1">A client cancels an appointment, creating a 1-hour gap. The RL agent identifies another appointment later in the day that can be moved up. It automatically offers the earlier slot to the second client, who accepts. The schedule is compacted, reducing idle time.</p>
+                        </div>
+                        <div class="relative scenario-step pl-8 py-4">
+                             <div class="absolute -left-2.5 top-5 w-5 h-5 bg-white border-4 border-teal-500 rounded-full"></div>
+                            <h3 class="text-xl font-semibold text-gray-800">Scenario 2: Dynamic Pricing for Off-Peak Hours</h3>
+                            <p class="text-gray-600 mt-1">The system observes consistently low demand on Tuesday afternoons. To incentivize bookings, the RL agent suggests a small, dynamic discount for these slots. New bookings increase, balancing the weekly workload and improving overall resource utilization.</p>
+                        </div>
+                        <div class="relative scenario-step pl-8 py-4">
+                             <div class="absolute -left-2.5 top-5 w-5 h-5 bg-white border-4 border-teal-500 rounded-full"></div>
+                            <h3 class="text-xl font-semibold text-gray-800">Scenario 3: VIP Client Prioritization</h3>
+                            <p class="text-gray-600 mt-1">A high-value client requests an urgent appointment on a fully booked day. The agent analyzes the schedule for lower-priority, flexible appointments. It identifies a candidate for rescheduling, contacts that client with an incentive (e.g., a future discount), and successfully frees up a slot for the VIP.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const timeSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"];
+    let scheduleA, scheduleB;
+
+    const initialSchedule = {
+        a: [
+            { time: "09:00", client: "Client A1", type: 'standard' },
+            null,
+            { time: "11:00", client: "Client A2", type: 'standard' },
+            null,
+            null,
+            { time: "14:00", client: "Client A3", type: 'flexible' },
+            { time: "15:00", client: "Client A4", type: 'standard' },
+            null,
+        ],
+        b: [
+            { time: "09:00", client: "Client B1", type: 'standard' },
+            { time: "10:00", client: "Client B2", type: 'standard' },
+            null,
+            { time: "12:00", client: "Client B3", type: 'flexible' },
+            null,
+            null,
+            { time: "15:00", client: "Client B4", type: 'standard' },
+            null,
+        ]
+    };
+    
+    const scheduleLog = document.getElementById('schedule-log');
+    const geminiMessageBtn = document.getElementById('gemini-client-message');
+    const geminiMessageContainer = document.getElementById('gemini-message-container');
+    const geminiMessageText = document.getElementById('gemini-message');
+    let lastMovedClient = null;
+    let lastMovedOldTime = null;
+    let lastMovedNewTime = null;
+    const marketTableRows = document.querySelectorAll('#market-table tbody tr');
+    const brainstormBtn = document.getElementById('gemini-brainstorm-button');
+    const brainstormContainer = document.getElementById('gemini-brainstorm-solutions');
+    const brainstormContent = document.getElementById('gemini-solutions-content');
+
+    function deepClone(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+    function resetSchedules() {
+        scheduleA = deepClone(initialSchedule.a);
+        scheduleB = deepClone(initialSchedule.b);
+    }
+    
+    function updateLog(message, isAction = false) {
+        scheduleLog.textContent = message;
+        if (isAction) {
+            scheduleLog.classList.add('bg-teal-100', 'text-teal-800');
+            scheduleLog.classList.remove('bg-gray-100', 'text-gray-700');
+        } else {
+            scheduleLog.classList.remove('bg-teal-100', 'text-teal-800');
+            scheduleLog.classList.add('bg-gray-100', 'text-gray-700');
+        }
+    }
+
+    function renderSchedule() {
+        const scheduleContainerA = document.getElementById('schedule-a');
+        const scheduleContainerB = document.getElementById('schedule-b');
+        scheduleContainerA.innerHTML = '';
+        scheduleContainerB.innerHTML = '';
+
+        [scheduleA, scheduleB].forEach((schedule, index) => {
+            const container = index === 0 ? scheduleContainerA : scheduleContainerB;
+            timeSlots.forEach((time, slotIndex) => {
+                const appointment = schedule[slotIndex];
+                const slotEl = document.createElement('div');
+                slotEl.classList.add('p-3', 'rounded-md', 'text-sm', 'h-16', 'flex', 'flex-col', 'justify-center');
+                let bgColor, textColor, borderColor;
+                if (appointment) {
+                    switch(appointment.type) {
+                        case 'vip':
+                            bgColor = 'bg-rose-100'; textColor = 'text-rose-800'; borderColor = 'border-rose-300'; break;
+                        case 'flexible':
+                            bgColor = 'bg-yellow-100'; textColor = 'text-yellow-800'; borderColor = 'border-yellow-300'; break;
+                        default:
+                            bgColor = 'bg-teal-100'; textColor = 'text-teal-800'; borderColor = 'border-teal-300';
+                    }
+                    slotEl.innerHTML = `<span class="font-bold">${appointment.time}</span><span>${appointment.client}</span>`;
+                    slotEl.classList.add(bgColor, textColor, 'border', borderColor);
+                } else {
+                    slotEl.innerHTML = `<span class="font-bold">${time}</span><span class="text-gray-400">Available</span>`;
+                    slotEl.classList.add('bg-gray-100');
+                }
+                container.appendChild(slotEl);
+            });
+        });
+    }
+
+    document.getElementById('sim-cancellation').addEventListener('click', () => {
+        const toCancelIndex = scheduleA.findIndex(apt => apt && apt.client === 'Client A2');
+        if (toCancelIndex !== -1) {
+            scheduleA[toCancelIndex] = null;
+            updateLog("Action: Client A2 cancelled. RL agent is analyzing the schedule...", true);
+            geminiMessageBtn.classList.add('hidden');
+            geminiMessageContainer.classList.add('hidden');
+            
+            setTimeout(() => {
+                const toMoveIndex = scheduleA.findIndex(apt => apt && apt.type === 'flexible');
+                if (toMoveIndex !== -1) {
+                    const appointmentToMove = scheduleA[toMoveIndex];
+                    lastMovedClient = appointmentToMove.client;
+                    lastMovedOldTime = appointmentToMove.time;
+                    scheduleA[toMoveIndex] = null;
+                    scheduleA[toCancelIndex] = { ...appointmentToMove, time: timeSlots[toCancelIndex] };
+                    lastMovedNewTime = timeSlots[toCancelIndex];
+                    updateLog("Result: Moved flexible Client A3 to fill the gap. Schedule optimized.", false);
+                    geminiMessageBtn.classList.remove('hidden');
+                    renderSchedule();
+                } else {
+                    updateLog("Result: No flexible appointments to move. Gap remains.", false);
+                    geminiMessageBtn.classList.add('hidden');
+                    renderSchedule();
+                }
+            }, 1500);
+            renderSchedule();
+        } else {
+            updateLog("Log: Client A2 has already cancelled or moved.", false);
+        }
+    });
+
+    document.getElementById('sim-book-vip').addEventListener('click', () => {
+        const vipSlotIndex = scheduleB.findIndex(apt => apt === null);
+        if (vipSlotIndex !== -1) {
+            scheduleB[vipSlotIndex] = { time: timeSlots[vipSlotIndex], client: "VIP Client", type: 'vip' };
+            updateLog("Action: VIP Client booked. Schedule updated.", true);
+            geminiMessageBtn.classList.add('hidden');
+            geminiMessageContainer.classList.add('hidden');
+            renderSchedule();
+        } else {
+            updateLog("Log: No available slots for VIP client.", false);
+        }
+    });
+
+    document.getElementById('sim-walk-in').addEventListener('click', () => {
+        let bestSlot = -1;
+        let minAdjacentEmpty = Infinity;
+
+        for (let i = 0; i < scheduleA.length; i++) {
+            if (scheduleA[i] === null) {
+                let adjacentEmpty = 0;
+                if (i > 0 && scheduleA[i-1] === null) adjacentEmpty++;
+                if (i < scheduleA.length - 1 && scheduleA[i+1] === null) adjacentEmpty++;
+                
+                if ( (i > 0 && scheduleA[i-1] !== null) || (i < scheduleA.length - 1 && scheduleA[i+1] !== null) ) {
+                   if (adjacentEmpty < minAdjacentEmpty) {
+                       minAdjacentEmpty = adjacentEmpty;
+                       bestSlot = i;
+                   }
+                }
+            }
+        }
+        
+        if (bestSlot !== -1) {
+            scheduleA[bestSlot] = { time: timeSlots[bestSlot], client: "Walk-In", type: 'standard' };
+            updateLog("Action: RL Agent placed Walk-In to minimize schedule fragmentation.", true);
+        } else {
+             const firstEmpty = scheduleA.findIndex(s => s === null);
+             if (firstEmpty !== -1) {
+                scheduleA[firstEmpty] = { time: timeSlots[firstEmpty], client: "Walk-In", type: 'standard' };
+                updateLog("Action: Placed Walk-In in first available slot.", true);
+             } else {
+                updateLog("Log: No slots available for a walk-in.", false);
+             }
+        }
+        geminiMessageBtn.classList.add('hidden');
+        geminiMessageContainer.classList.add('hidden');
+        renderSchedule();
+    });
+
+    document.getElementById('sim-reset').addEventListener('click', () => {
+        resetSchedules();
+        renderSchedule();
+        updateLog("Log: Schedule has been reset to the initial state.", false);
+        geminiMessageBtn.classList.add('hidden');
+        geminiMessageContainer.classList.add('hidden');
+        lastMovedClient = null;
+    });
+
+    geminiMessageBtn.addEventListener('click', async () => {
+        if (!lastMovedClient) return;
+        geminiMessageText.innerHTML = '<span class="text-gray-400">Generating message...</span>';
+        geminiMessageContainer.classList.remove('hidden');
+
+        const systemPrompt = "Act as an intelligent scheduling assistant. Draft a short, empathetic message to a client about a change in their appointment time. Be concise and polite.";
+        const userQuery = `Draft a message for a client named "${lastMovedClient}" to inform them that their appointment originally scheduled for ${lastMovedOldTime} has been moved to ${lastMovedNewTime} to better optimize the schedule.`;
+
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            tools: [{ "google_search": {} }],
+            systemInstruction: {
+                parts: [{ text: systemPrompt }]
+            }
+        };
+
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate message.";
+            geminiMessageText.textContent = text;
+        } catch (error) {
+            geminiMessageText.textContent = "Error generating message. Please try again later.";
+            console.error(error);
+        }
+    });
+
+    marketTableRows.forEach(row => {
+        row.addEventListener('click', () => {
+            marketTableRows.forEach(r => r.classList.remove('bg-gray-200'));
+            row.classList.add('bg-gray-200');
+            brainstormBtn.dataset.product = row.dataset.product;
+            brainstormBtn.classList.remove('hidden');
+            brainstormContainer.classList.add('hidden');
+        });
+    });
+
+    brainstormBtn.addEventListener('click', async () => {
+        const product = brainstormBtn.dataset.product;
+        const gap = document.querySelector(`#market-table tr[data-product="${product}"] td:last-child`).textContent;
+
+        brainstormContent.innerHTML = '<span class="text-gray-400">Brainstorming solutions...</span>';
+        brainstormContainer.classList.remove('hidden');
+
+        const systemPrompt = `Act as an expert product manager and data scientist. Brainstorm three innovative, actionable solutions using reinforcement learning principles to address the identified technological gap. Present the solutions as a clear, numbered list with brief descriptions.`;
+        const userQuery = `For the product "${product}" with the gap: "${gap}", propose three distinct solutions.`;
+
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            tools: [{ "google_search": {} }],
+            systemInstruction: {
+                parts: [{ text: systemPrompt }]
+            }
+        };
+
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Failed to generate solutions.";
+            brainstormContent.textContent = text;
+        } catch (error) {
+            brainstormContent.textContent = "Error generating solutions. Please try again later.";
+            console.error(error);
+        }
+    });
+
+    resetSchedules();
+    renderSchedule();
+
+    const literatureNodes = document.querySelectorAll('.literature-node');
+    const literatureDetails = document.getElementById('literature-details');
+    const litData = {
+        lit1: "<strong>Summary:</strong> This paper applies a Q-learning model to a simulated outpatient clinic environment. The agent learns a policy to dynamically reorder patient queues based on no-show probabilities and service times, achieving a significant reduction in physician idle time compared to a first-come, first-served baseline.",
+        lit2: "<strong>Summary:</strong> Explores a decentralized approach where each resource (e.g., doctor, room) is an independent RL agent. They learn to cooperate by passing 'jobs' (patients) to each other, optimizing for overall system throughput in complex, multi-stage service environments. This is highly effective for hospital-wide scheduling.",
+        lit3: "<strong>Summary:</strong> A foundational text that provides a taxonomy of scheduling problems, classifying them by factors like stochasticity, dynamism, and objective functions. It formalizes the state-action-reward structure essential for applying RL models, making it a critical reference for research design."
+    };
+    
+    literatureNodes.forEach(node => {
+        node.addEventListener('click', () => {
+            literatureNodes.forEach(n => n.classList.remove('active'));
+            node.classList.add('active');
+            literatureDetails.innerHTML = litData[node.dataset.id];
+        });
+    });
+
+    const kpiData = {
+        baseline: {
+            labels: ['Resource Utilization', 'Client Satisfaction', 'Revenue'],
+            rl: [85, 92, 105],
+            trad: [70, 88, 100]
+        },
+        high_cancellation: {
+            labels: ['Resource Utilization', 'Client Satisfaction', 'Revenue'],
+            rl: [78, 85, 95],
+            trad: [55, 75, 80]
+        },
+        high_demand: {
+            labels: ['Resource Utilization', 'Client Satisfaction', 'Revenue'],
+            rl: [95, 89, 125],
+            trad: [88, 85, 115]
+        }
+    };
+    const efficiencyData = {
+        baseline: [70, 75, 78, 80, 82, 84, 85],
+        high_cancellation: [55, 60, 65, 70, 73, 76, 78],
+        high_demand: [88, 90, 91, 92, 93, 94, 95]
+    };
+    
+    let kpiChart, efficiencyChart;
+    const kpiCtx = document.getElementById('kpiChart').getContext('2d');
+    const effCtx = document.getElementById('efficiencyChart').getContext('2d');
+
+    function createCharts(scenario) {
+        if(kpiChart) kpiChart.destroy();
+        if(efficiencyChart) efficiencyChart.destroy();
+        
+        kpiChart = new Chart(kpiCtx, {
+            type: 'bar',
+            data: {
+                labels: kpiData[scenario].labels,
+                datasets: [{
+                    label: 'RL Adaptive Scheduling',
+                    data: kpiData[scenario].rl,
+                    backgroundColor: 'rgba(77, 182, 172, 0.6)',
+                    borderColor: 'rgba(77, 182, 172, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Traditional Scheduling',
+                    data: kpiData[scenario].trad,
+                    backgroundColor: 'rgba(200, 200, 200, 0.6)',
+                    borderColor: 'rgba(150, 150, 150, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'KPI Comparison (Index, Baseline=100)', font: { size: 16 } },
+                    legend: { position: 'bottom' }
+                },
+                scales: {
+                    y: { beginAtZero: true, suggestedMax: 130 }
+                }
+            }
+        });
+
+        efficiencyChart = new Chart(effCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7'],
+                datasets: [{
+                    label: 'System Efficiency (%)',
+                    data: efficiencyData[scenario],
+                    fill: true,
+                    borderColor: 'rgb(240, 128, 128)',
+                    backgroundColor: 'rgba(240, 128, 128, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Efficiency Gains Over Time', font: { size: 16 } },
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    }
+
+    document.getElementById('kpi-filter').addEventListener('change', (e) => {
+        createCharts(e.target.value);
+    });
+
+    createCharts('baseline');
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.4
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('id');
+          navLinks.forEach(link => {
+            link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+          });
+          if(mobileNav.value !== `#${id}`) {
+             mobileNav.value = `#${id}`;
+          }
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href')).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+    mobileNav.addEventListener('change', (e) => {
+        document.querySelector(e.target.value).scrollIntoView({ behavior: 'smooth' });
+    });
+});
+</script>
+</body>
+</html>

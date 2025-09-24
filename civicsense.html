@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CivicSense: AI for Barangay Complaint Intelligence (Updated)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .container { max-width: 1200px; }
+        .section-title { color: #1f2937; }
+        .canvas-container { border-radius: 0.75rem; background-color: #ffffff; border: 1px solid #e5e7eb; }
+        .tooltip { position: absolute; background-color: rgba(0,0,0,0.75); color: white; padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem; pointer-events: none; opacity: 0; transition: opacity 0.12s; z-index: 10; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-8">
+    <div class="container mx-auto space-y-12">
+        <header class="text-center space-y-4">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-800 tracking-tight">NLP + Graph-Based Clustering + Temporal Analysis & Forecasting</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">This simulation demonstrates how data-driven insights can improve barangay complaint management. Enter a complaint below to see how our system automatically categorizes and groups it with similar reports.</p>
+        </header>
+
+        <section class="bg-white rounded-xl shadow-lg p-8 md:p-12 space-y-6">
+            <h2 class="text-2xl font-bold section-title mb-4">Simulate a New Complaint</h2>
+            <form id="complaintForm" class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4">
+                <textarea id="complaintInput" class="flex-1 w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your complaint here (e.g., 'The water is overflowing on Rizal St. again.')." rows="3"></textarea>
+                <button type="submit" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-md hover:bg-blue-700 transition duration-300 w-full md:w-auto">Submit Complaint</button>
+            </form>
+
+            <div id="loadingIndicator" class="hidden text-center text-blue-500 font-medium mt-4">
+                <p>Processing complaint...</p>
+                <p class="text-sm text-gray-500"><span id="loadingMessage">Classifying with LLM...</span></p>
+            </div>
+
+            <div id="results" class="hidden mt-6 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <h3 class="text-xl font-semibold mb-2 text-green-700">Analysis Complete!</h3>
+                <p id="resultText" class="text-gray-700"></p>
+                <button id="planButton" class="mt-4 bg-purple-600 text-white font-semibold py-2 px-6 rounded-lg shadow-md hover:bg-purple-700 transition duration-300">✨ Generate Action Plan</button>
+            </div>
+
+            <div id="actionPlanSection" class="hidden mt-6 bg-white rounded-xl shadow-lg p-8 space-y-4 border border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">Strategic Action Plan</h3>
+                <div id="actionPlanContent" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-xl shadow-lg p-8 md:p-12 space-y-6">
+                <h2 class="text-2xl font-bold section-title mb-4">Graph-Based Clustering</h2>
+                <p class="text-gray-600">Complaints are connected based on text similarity. Clusters of related issues (even if worded differently) are identified for efficient deduplication and prioritization. <br><span class="text-xs italic text-gray-500">Nodes are complaints; lines represent similarity. Colors indicate clusters. Click a node to see its details and cluster highlights.</span></p>
+                <div class="canvas-container p-4">
+                    <canvas id="graphCanvas" class="w-full" height="420"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-8 md:p-12 space-y-6">
+                <h2 class="text-2xl font-bold section-title mb-4">Temporal Analysis & Forecasting</h2>
+                <p class="text-gray-600">The system analyzes complaint patterns over time to help barangay officials predict and prepare for future issues. <br><span class="text-xs italic text-gray-500">Bars show daily complaint counts. The dotted line shows a simulated forecast of the next 3 days.</span></p>
+                <div class="canvas-container p-4">
+                    <canvas id="temporalCanvas" class="w-full" height="420"></canvas>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div id="tooltip" class="tooltip hidden"></div>
+
+    <script>
+        // ----- Simulation data -----
+        const sampleComplaints = [
+            { id: 1, text: "Loud karaoke all night from the house near the street corner.", date: "2024-09-01", category: "Noise" },
+            { id: 2, text: "The neighbors are playing loud music again. It's too noisy.", date: "2024-09-02", category: "Noise" },
+            { id: 3, text: "Can't sleep because of the loud party at my neighbor's house.", date: "2024-09-02", category: "Noise" },
+            { id: 4, text: "The street light on Mabini Street is out.", date: "2024-09-03", category: "Lighting" },
+            { id: 5, text: "Broken lamp post near the school.", date: "2024-09-04", category: "Lighting" },
+            { id: 6, text: "Street flooded after a little rain. The drainage is blocked.", date: "2024-09-05", category: "Flooding" },
+            { id: 7, text: "Water is overflowing from the drain near the market.", date: "2024-09-06", category: "Flooding" },
+            { id: 8, text: "Garbage is piling up at the corner of Aguinaldo and Rizal.", date: "2024-09-07", category: "Sanitation" },
+            { id: 9, text: "Trash hasn't been collected in days.", date: "2024-09-08", category: "Sanitation" },
+        ];
+
+        const categoryColors = { Noise: '#ef4444', Lighting: '#3b82f6', Flooding: '#10b981', Sanitation: '#8b5cf6', Miscellaneous: '#9ca3af', Safety: '#f97316' };
+
+        // ----- Utility: simple tokenizer & vectorizer -----
+        function tokenize(text) {
+            return text.toLowerCase().replace(/[.,'"!?:()]/g, '').split(/\s+/).filter(Boolean);
+        }
+
+        function buildVocabulary(items) {
+            const vocab = new Map();
+            let idx = 0;
+            items.forEach(t => {
+                const tokens = tokenize(t);
+                tokens.forEach(tok => { if (!vocab.has(tok)) vocab.set(tok, idx++); });
+            });
+            return vocab;
+        }
+
+        function vectorize(text, vocab) {
+            const vec = new Array(vocab.size).fill(0);
+            tokenize(text).forEach(tok => { if (vocab.has(tok)) vec[vocab.get(tok)]++; });
+            return vec;
+        }
+
+        function dot(a, b) { let s = 0; for (let i=0;i<a.length;i++) s += a[i]*b[i]; return s; }
+        function norm(a) { let s=0; for (let i=0;i<a.length;i++) s += a[i]*a[i]; return Math.sqrt(s); }
+        function cosine(a,b){ const n1 = norm(a), n2 = norm(b); if (n1===0||n2===0) return 0; return dot(a,b)/(n1*n2); }
+
+        // ----- Graph clustering based on text similarity -----
+        const graphCanvas = document.getElementById('graphCanvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        let nodes = [];
+        let edges = [];
+        let clusters = {}; // nodeId -> cluster id
+        const clusterColors = ['#ef4444','#3b82f6','#10b981','#8b5cf6','#f97316','#f59e0b','#06b6d4','#a78bfa'];
+
+        function setupCanvasSize(canvas) {
+            const rect = canvas.getBoundingClientRect();
+            const ratio = window.devicePixelRatio || 1;
+            canvas.width = Math.floor(rect.width * ratio);
+            canvas.height = Math.floor(canvas.height * ratio);
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = (canvas.height/ratio) + 'px';
+            graphCtx.setTransform(ratio,0,0,ratio,0,0);
+        }
+
+        function initializeGraph() {
+            // Setup canvas size and initial nodes
+            const rect = graphCanvas.getBoundingClientRect();
+            graphCanvas.width = rect.width;
+            graphCanvas.height = rect.height;
+
+            // build vocabulary and vectors
+            const texts = sampleComplaints.map(c => c.text);
+            const vocab = buildVocabulary(texts);
+            const vectors = sampleComplaints.map(c => vectorize(c.text, vocab));
+
+            nodes = sampleComplaints.map((c,i) => ({
+                id: c.id,
+                text: c.text,
+                category: c.category,
+                x: Math.random()*(graphCanvas.width-60)+30,
+                y: Math.random()*(graphCanvas.height-60)+30,
+                radius: 12,
+                vx: 0,
+                vy: 0,
+                color: categoryColors[c.category] || '#9ca3af',
+                vec: vectors[i]
+            }));
+
+            // compute pairwise similarity and create edges above threshold
+            edges = [];
+            const simThreshold = 0.28; // tweak this to control clustering sensitivity
+            for (let i=0;i<nodes.length;i++){
+                for (let j=i+1;j<nodes.length;j++){
+                    const s = cosine(nodes[i].vec, nodes[j].vec);
+                    if (s >= simThreshold) {
+                        edges.push({ source: nodes[i], target: nodes[j], weight: s });
+                    }
+                }
+            }
+
+            // form clusters by connected components on the similarity graph
+            clusters = {};
+            let clusterId = 0;
+            const visited = new Set();
+            const adj = new Map();
+            nodes.forEach(n => adj.set(n.id, []));
+            edges.forEach(e => { adj.get(e.source.id).push(e.target.id); adj.get(e.target.id).push(e.source.id); });
+
+            function bfs(start){
+                const q=[start]; visited.add(start); clusters[start]=clusterId;
+                while(q.length){
+                    const u=q.shift();
+                    adj.get(u).forEach(v=>{ if(!visited.has(v)){ visited.add(v); clusters[v]=clusterId; q.push(v); } });
+                }
+            }
+
+            nodes.forEach(n=>{ if(!visited.has(n.id)){ bfs(n.id); clusterId++; } });
+
+            // assign cluster colors
+            nodes.forEach(n => { n.cluster = clusters[n.id]; n.displayColor = clusterColors[n.cluster % clusterColors.length] || n.color; });
+
+            // relax and center
+            animateGraph();
+        }
+
+        function drawGraph() {
+            graphCtx.clearRect(0,0,graphCanvas.width,graphCanvas.height);
+
+            // edges
+            graphCtx.strokeStyle = 'rgba(156,163,175,0.6)';
+            graphCtx.lineWidth = 1.4;
+            edges.forEach(e=>{
+                graphCtx.beginPath();
+                graphCtx.moveTo(e.source.x, e.source.y);
+                graphCtx.lineTo(e.target.x, e.target.y);
+                graphCtx.stroke();
+            });
+
+            // nodes
+            nodes.forEach(n=>{
+                graphCtx.beginPath();
+                graphCtx.arc(n.x, n.y, n.radius, 0, Math.PI*2);
+                graphCtx.fillStyle = n.displayColor;
+                graphCtx.fill();
+                graphCtx.lineWidth = 2;
+                graphCtx.strokeStyle = '#111827';
+                graphCtx.stroke();
+
+                graphCtx.fillStyle = '#111827';
+                graphCtx.font = '10px Inter';
+                graphCtx.textAlign = 'center';
+                graphCtx.textBaseline = 'top'; // ✅ aligns from the top
+                graphCtx.fillText(n.category, n.x, n.y + n.radius + 2);
+            });
+        }
+
+        // Force-directed layout (simple)
+        let selectedNode = null; let isDragging=false; let dragOffset={x:0,y:0};
+        function animateGraph() {
+            // basic repulsion
+            for (let i=0;i<nodes.length;i++){
+                for (let j=i+1;j<nodes.length;j++){
+                    const a=nodes[i], b=nodes[j];
+                    let dx=b.x-a.x, dy=b.y-a.y; let dist=Math.sqrt(dx*dx+dy*dy)||1;
+                    const minDist = 40;
+                    if (dist < minDist) {
+                        const push = (minDist - dist)/dist * 0.4;
+                        a.vx -= dx * push; a.vy -= dy * push; b.vx += dx * push; b.vy += dy * push;
+                    }
+                }
+            }
+            // spring edges
+            const springK = 0.002;
+            edges.forEach(e=>{
+                const a=e.source, b=e.target; let dx=b.x-a.x, dy=b.y-a.y; let dist=Math.sqrt(dx*dx+dy*dy)||1;
+                const target = 120; const force = springK*(dist-target);
+                a.vx += dx*force; a.vy += dy*force; b.vx -= dx*force; b.vy -= dy*force;
+            });
+
+            // integrate
+            nodes.forEach(n=>{
+                if (n!==selectedNode){
+                    n.vx *= 0.88; n.vy *= 0.88; n.x += n.vx; n.y += n.vy;
+                    // bounds
+                    n.x = Math.max(n.radius, Math.min(graphCanvas.width - n.radius, n.x));
+                    n.y = Math.max(n.radius, Math.min(graphCanvas.height - n.radius, n.y));
+                }
+            });
+
+            drawGraph();
+            requestAnimationFrame(animateGraph);
+        }
+
+        // ----- Temporal analysis and forecasting -----
+        const temporalCanvas = document.getElementById('temporalCanvas');
+        const temporalCtx = temporalCanvas.getContext('2d');
+        let complaintData = {
+            "2024-09-01": { Noise: 1 },
+            "2024-09-02": { Noise: 2 },
+            "2024-09-03": { Lighting: 1 },
+            "2024-09-04": { Lighting: 1 },
+            "2024-09-05": { Flooding: 1 },
+            "2024-09-06": { Flooding: 1 },
+            "2024-09-07": { Sanitation: 1 },
+            "2024-09-08": { Sanitation: 1 }
+        };
+
+        function drawTemporalChart() {
+            // prepare canvas size
+            const rect = temporalCanvas.getBoundingClientRect();
+            const ratio = window.devicePixelRatio || 1;
+            temporalCanvas.width = Math.floor(rect.width * ratio);
+            temporalCanvas.height = Math.floor(rect.height * ratio);
+            temporalCanvas.style.width = rect.width + 'px';
+            temporalCanvas.style.height = (temporalCanvas.height/ratio) + 'px';
+            temporalCtx.setTransform(ratio,0,0,ratio,0,0);
+
+            temporalCtx.clearRect(0,0,temporalCanvas.width,temporalCanvas.height);
+            temporalCtx.font = '11px Inter';
+
+            const dates = Object.keys(complaintData).sort();
+            if (dates.length===0) return;
+
+            // compute totals per day
+            const totals = dates.map(d => Object.values(complaintData[d]).reduce((s,v)=>s+v,0));
+            const maxCount = Math.max(...totals, 1);
+            const padding = 40; const chartW = temporalCanvas.width/ (window.devicePixelRatio||1) - padding*2; const chartH = temporalCanvas.height/ (window.devicePixelRatio||1) - padding*2;
+            const barWidth = chartW / (dates.length*1.4);
+
+            // draw axis
+            temporalCtx.fillStyle = '#6b7280'; temporalCtx.fillText('Daily Complaint Count', padding, 18);
+            temporalCtx.beginPath(); temporalCtx.moveTo(padding, padding+chartH); temporalCtx.lineTo(padding+chartW, padding+chartH); temporalCtx.strokeStyle = '#d1d5db'; temporalCtx.stroke();
+
+            // draw bars stacked by category
+            dates.forEach((date,i)=>{
+                const x = padding + i * barWidth * 1.4;
+                let yOffset = 0;
+                const counts = complaintData[date];
+                const cats = Object.keys(counts);
+                cats.forEach(cat=>{
+                    const val = counts[cat]||0;
+                    const h = (val/maxCount) * chartH;
+                    temporalCtx.fillStyle = categoryColors[cat] || '#9ca3af';
+                    temporalCtx.fillRect(x, padding+chartH - yOffset - h, barWidth, h);
+                    yOffset += h;
+                });
+                temporalCtx.fillStyle = '#6b7280'; temporalCtx.textAlign = 'center';
+                temporalCtx.fillText(date.substring(5), x + barWidth/2, padding+chartH + 14);
+            });
+
+            // Forecast: simple linear regression on totals to predict next 3 days
+            const n = totals.length;
+            const xs = Array.from({length:n}, (_,i)=>i+1);
+            const meanX = xs.reduce((a,b)=>a+b,0)/n; const meanY = totals.reduce((a,b)=>a+b,0)/n;
+            let num=0, den=0;
+            for (let i=0;i<n;i++){ num += (xs[i]-meanX)*(totals[i]-meanY); den += (xs[i]-meanX)*(xs[i]-meanX); }
+            const slope = den===0?0:num/den; const intercept = meanY - slope*meanX;
+
+            const forecastDays = 3;
+            const forecast = [];
+            for (let k=1;k<=forecastDays;k++){
+                const xi = n + k; const yi = intercept + slope*xi; forecast.push(Math.max(0, yi));
+            }
+
+            // draw forecast dotted line
+            temporalCtx.strokeStyle = '#f59e0b'; temporalCtx.setLineDash([6,6]); temporalCtx.lineWidth = 2;
+            temporalCtx.beginPath();
+            // start from last actual middle point
+            const lastX = padding + (n-1) * barWidth * 1.4 + barWidth/2;
+            const lastY = padding+chartH - (totals[n-1]/maxCount)*chartH;
+            temporalCtx.moveTo(lastX, lastY);
+            forecast.forEach((f,i)=>{
+                const x = padding + (n + i) * barWidth * 1.4 + barWidth/2;
+                const y = padding+chartH - (f/maxCount)*chartH;
+                temporalCtx.lineTo(x, y);
+            });
+            temporalCtx.stroke(); temporalCtx.setLineDash([]);
+
+            // draw forecast points and labels
+            forecast.forEach((f,i)=>{
+                const x = padding + (n + i) * barWidth * 1.4 + barWidth/2;
+                const y = padding+chartH - (f/maxCount)*chartH;
+                temporalCtx.beginPath(); temporalCtx.arc(x,y,4,0,Math.PI*2); temporalCtx.fillStyle='#f59e0b'; temporalCtx.fill();
+                temporalCtx.fillStyle='#374151'; temporalCtx.textAlign='center'; temporalCtx.fillText(Math.round(f), x, y-8);
+            });
+
+        }
+
+        // ----- Form submission (fake LLM: categorize by keyword heuristics) -----
+        let lastCategory = '';
+        document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const txt = document.getElementById('complaintInput').value.trim(); if(!txt) return;
+            const loading = document.getElementById('loadingIndicator'); const resultsDiv = document.getElementById('results'); const resultText = document.getElementById('resultText');
+            loading.classList.remove('hidden'); resultsDiv.classList.add('hidden'); document.getElementById('actionPlanSection').classList.add('hidden');
+            try{
+                document.getElementById('loadingMessage').textContent = 'Classifying (local heuristic)...';
+                await new Promise(r=>setTimeout(r,400));
+                // crude heuristic categorizer
+                const t = txt.toLowerCase(); let cat = 'Miscellaneous';
+                if (/water|flood|drain|drainage|overflow/.test(t)) cat='Flooding';
+                else if (/light|lamp|street light|lamp post/.test(t)) cat='Lighting';
+                else if (/trash|garbage|trash|collect|dumpster|sanitation/.test(t)) cat='Sanitation';
+                else if (/loud|noise|karaoke|music|party|shouting/.test(t)) cat='Noise';
+                else if (/robbery|theft|danger|accident|unsafe/.test(t)) cat='Safety';
+                const color = categoryColors[cat] || '#9ca3af';
+                lastCategory = cat;
+
+                // add to sample list and update nodes/temporal
+                const now = new Date(); const today = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')}`;
+                const newId = sampleComplaints.length + 1;
+                const newComplaint = { id:newId, text: txt, date: today, category: cat };
+                sampleComplaints.push(newComplaint);
+
+                // update complaintData
+                if (!complaintData[today]) complaintData[today] = {};
+                complaintData[today][cat] = (complaintData[today][cat]||0) + 1;
+
+                // reinitialize graph (cheap but straightforward for this simulation)
+                initializeGraph(); drawTemporalChart();
+
+                // compute duplicates and linked ids by category
+                const linked = sampleComplaints.filter(c=>c.category===cat).map(c=>c.id);
+                const duplicatesFound = linked.length - 1;
+
+                resultText.innerHTML = `\n                    <p class="font-bold">Categorized as: <span style=\"color:${color};\">${cat}</span></p>\n                    <p class=\"text-sm italic mb-2\">Heuristic match (local rules).</p>\n                    <p>This complaint has been automatically linked to <span class=\"font-bold\">${duplicatesFound} other report(s)</span>, indicating a potential duplicate or recurring issue.</p>\n                `;
+                resultsDiv.classList.remove('hidden');
+
+            }catch(err){ console.error(err); resultText.innerHTML = `<p class="text-red-600">Failed to process complaint.</p>`; resultsDiv.classList.remove('hidden'); }
+            finally{ loading.classList.add('hidden'); document.getElementById('complaintInput').value=''; }
+        });
+
+        // ----- Action plan (local templating) -----
+        document.getElementById('planButton').addEventListener('click', ()=>{
+            const planSection = document.getElementById('actionPlanSection'); const planContent = document.getElementById('actionPlanContent');
+            planSection.classList.remove('hidden');
+            if(!lastCategory) { planContent.innerHTML = '<p class="text-gray-700">No category available. Submit a complaint first.</p>'; return; }
+            const plans = {
+                Noise: ['Coordinate with barangay tanod to request noise control during night hours', 'Issue a polite notice to repeat offenders and offer mediation', 'Schedule community awareness on neighborhood noise ordinances'],
+                Flooding: ['Inspect and map known drainage chokepoints during dry hours', 'Organize a barangay cleanup to remove visible blockages', 'Coordinate with municipal engineers for longer-term drainage improvements'],
+                Lighting: ['Log exact locations and prioritize public areas (school, main road)', 'Report to utilities with lamp post IDs and photos', 'Deploy temporary lighting or reflective signs if necessary'],
+                Sanitation: ['Organize coordinated trash pickup with schedules and barangay volunteers', 'Place temporary bins at hotspots and post collection timetables', 'Issue small fines or warnings to habitual offenders as deterrent'],
+                Safety: ['Send patrols to the reported area and collect eyewitness reports', 'Coordinate with municipal police for hotspot response', 'Install neighborhood watch posters and emergency contacts']
+            };
+            const content = plans[lastCategory] || ['Log the issue, collect photos, and escalate to the appropriate office.'];
+            planContent.innerHTML = `<h4 class="text-lg font-semibold">Action plan: ${lastCategory}</h4><p class="text-gray-600">Practical short-term steps the barangay can take.</p><ul class="list-disc list-inside mt-2">${content.map(c=>`<li class="text-gray-700">${c}</li>`).join('')}</ul>`;
+        });
+
+        // ----- Canvas interactions (hover, click) -----
+        function getMousePos(canvas, e){ const rect = canvas.getBoundingClientRect(); const ratio = window.devicePixelRatio||1; return { x: (e.clientX - rect.left), y: (e.clientY - rect.top) }; }
+
+        graphCanvas.addEventListener('mousedown', (e)=>{
+            const pos = getMousePos(graphCanvas,e);
+            const hit = nodes.find(n=>Math.hypot(pos.x-n.x,pos.y-n.y) < n.radius+2);
+            if(hit){ selectedNode = hit; isDragging=true; dragOffset.x = pos.x - hit.x; dragOffset.y = pos.y - hit.y; }
+        });
+        graphCanvas.addEventListener('mousemove', (e)=>{
+            const pos = getMousePos(graphCanvas,e);
+            if(isDragging && selectedNode){ selectedNode.x = pos.x - dragOffset.x; selectedNode.y = pos.y - dragOffset.y; }
+            // hover
+            const hover = nodes.find(n=>Math.hypot(pos.x-n.x,pos.y-n.y) < n.radius+2);
+            if(hover){
+                tooltip.style.opacity = 1;
+                tooltip.classList.remove('hidden');
+
+                const rect = graphCanvas.getBoundingClientRect();
+                tooltip.style.left = (rect.left + hover.x + 15) + 'px';
+                tooltip.style.top  = (e.clientY+350)+'px';
+
+                tooltip.innerHTML = `<strong>${hover.category}</strong><br>${hover.text}`;
+            }
+            else { tooltip.style.opacity = 0; tooltip.classList.add('hidden'); }
+        });
+        graphCanvas.addEventListener('mouseup', ()=>{ isDragging=false; selectedNode=null; });
+        graphCanvas.addEventListener('click', (e)=>{
+            const pos = getMousePos(graphCanvas,e);
+            const hit = nodes.find(n=>Math.hypot(pos.x-n.x,pos.y-n.y) < n.radius+2);
+            if(hit){ // highlight its cluster
+                const cid = hit.cluster;
+                nodes.forEach(n=> n.highlight = (n.cluster===cid));
+                // brighten cluster colors temporarily
+                nodes.forEach(n=> n.displayColor = n.cluster===cid ? shadeColor(n.displayColor, -15) : shadeColor(n.displayColor, 40));
+                setTimeout(()=>{ nodes.forEach(n=> n.displayColor = clusterColors[n.cluster % clusterColors.length] || n.color ); }, 1400);
+                // show details in tooltip
+                tooltip.style.opacity = 1; tooltip.classList.remove('hidden'); tooltip.style.left = (e.clientX+12)+'px'; tooltip.style.top = (e.clientY+12)+'px';
+                tooltip.innerHTML = `<strong>Cluster ${cid}</strong><br>${hit.text}`;
+            }
+        });
+
+        function shadeColor(hex, percent) {
+            // simple shade utility: percent negative -> darker, positive -> lighter
+            try{
+                const c = hex.replace('#',''); const num = parseInt(c,16);
+                let r = (num>>16)+Math.round(255*percent/100); let g = ((num>>8)&0x00FF)+Math.round(255*percent/100); let b = (num & 0x0000FF)+Math.round(255*percent/100);
+                r=Math.min(255,Math.max(0,r)); g=Math.min(255,Math.max(0,g)); b=Math.min(255,Math.max(0,b));
+                return '#'+(r.toString(16).padStart(2,'0'))+(g.toString(16).padStart(2,'0'))+(b.toString(16).padStart(2,'0'));
+            }catch(e){ return hex; }
+        }
+
+        // ----- Initialization & responsiveness -----
+        function initAll(){
+            // ensure canvas sizing
+            setupCanvasSize(graphCanvas);
+            initializeGraph();
+            drawTemporalChart();
+        }
+
+        window.addEventListener('resize', ()=>{ setupCanvasSize(graphCanvas); initializeGraph(); drawTemporalChart(); });
+        window.onload = initAll;
+
+    </script>
+</body>
+</html>

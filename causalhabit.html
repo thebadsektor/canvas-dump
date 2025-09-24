@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Causal Habit Pathways Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .node {
+            cursor: pointer;
+        }
+        .link {
+            stroke: #9ca3af;
+            stroke-width: 1.5px;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        .marker {
+            fill: #9ca3af;
+        }
+        .timeline-bar {
+            fill: #6b7280;
+            cursor: ew-resize;
+        }
+        .timeline-handle {
+            fill: #1f2937;
+            stroke: #4b5563;
+            stroke-width: 1px;
+            cursor: ew-resize;
+        }
+        .link-text {
+            fill: #4b5563;
+            font-size: 10px;
+            pointer-events: none;
+        }
+        .node-text {
+            font-size: 10px;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #1f2937;
+        }
+        #tooltip {
+            position: absolute;
+            text-align: center;
+            padding: 8px;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <div class="lg:w-1/2">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h1 class="text-3xl font-bold mb-2">Causal Habit Pathways Simulation</h1>
+                <p class="text-gray-600 mb-4">A visualization of how Temporal Graph Neural Networks (T-GNNs) and counterfactuals discover the "why" behind habits.</p>
+                <div id="controls" class="space-y-4">
+                    <div>
+                        <label for="timeline-slider" class="block text-sm font-medium text-gray-700">Timeline: Day <span id="current-day">0</span></label>
+                        <input type="range" id="timeline-slider" min="0" max="14" value="0" step="1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                        <button id="next-day" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200">Next Day</button>
+                    </div>
+                    <div class="border-t border-gray-200 pt-4">
+                        <label for="counterfactual-select" class="block text-sm font-medium text-gray-700">Counterfactual Simulation</label>
+                        <select id="counterfactual-select" class="w-full mt-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="none">Select a Scenario...</option>
+                            <option value="c1">What if I had prepared for my deadline on Sunday?</option>
+                            <option value="c2">What if I had meditated for 15 mins on Day 7?</option>
+                        </select>
+                        <button id="run-simulation" class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors duration-200 mt-2">Run Simulation</button>
+                    </div>
+                </div>
+                <div id="insights" class="mt-6 p-4 bg-gray-100 rounded-lg border border-gray-200 hidden">
+                    <h3 class="text-lg font-bold">Causal Insight</h3>
+                    <p id="insight-text" class="text-sm mt-2"></p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold mb-2">Journal Entries</h2>
+                <div id="journal-entries" class="space-y-4 text-gray-800 text-sm">
+                    <!-- Journal entries will be injected here by JS -->
+                </div>
+            </div>
+        </div>
+        <div class="lg:w-1/2">
+            <div class="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col items-center">
+                <h2 class="text-2xl font-bold mb-4">Interactive Causal Graph</h2>
+                <div class="relative w-full h-full min-h-[500px] flex justify-center items-center">
+                    <svg id="graph-container" class="w-full h-full overflow-visible"></svg>
+                    <div id="tooltip" class="rounded-lg shadow-lg"></div>
+                    <div id="message-box" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-900 text-white text-center p-4 rounded-lg shadow-xl hidden">
+                        <p id="message-text" class="text-base"></p>
+                        <button onclick="document.getElementById('message-box').classList.add('hidden')" class="mt-2 text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded-full">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for the simulation
+        const rawJournalEntries = [
+            { day: 1, text: "I woke up feeling anxious about my big work deadline. Skipped meditation to get a head start on work." },
+            { day: 2, text: "I finished the work deadline. Felt a huge sense of relief. Did a 30-minute run in the afternoon." },
+            { day: 3, text: "Woke up feeling a little groggy, but focused. Meditated for 15 minutes and it felt great." },
+            { day: 4, text: "Stayed up late watching a movie. Woke up late and rushed. Skipped meditation." },
+            { day: 5, text: "Felt stressed about an upcoming presentation. Went for a quick walk during lunch to clear my head. Didn't meditate." },
+            { day: 6, text: "Woke up early, meditated for 15 minutes. Felt calm and ready for the day. Presentation went well." },
+            { day: 7, text: "Weekend! Hung out with friends all day. Didn't think about work or my habits at all. A much needed break." },
+            { day: 8, text: "Woke up feeling refreshed after a good weekend. Meditated for 15 minutes and felt a strong sense of focus." },
+            { day: 9, text: "Had a difficult conversation with a coworker. Felt frustrated. Skipped my evening walk." },
+            { day: 10, text: "Woke up still thinking about the conversation. Skipped meditation to get to work early and finish a report." },
+            { day: 11, text: "Went to bed early. Felt calm after reading a book. Woke up feeling well-rested. Meditated for 15 minutes." },
+            { day: 12, text: "Another day with meditation. Felt focused and had a productive morning." },
+            { day: 13, text: "Ate a heavy lunch and felt sluggish in the afternoon. Didn't meditate because I felt too tired." },
+            { day: 14, text: "Woke up feeling determined. Meditated for 15 minutes. Had a great day. Felt accomplished." }
+        ];
+
+        // An NLP-like pipeline to generate graph data from journal entries
+        const processJournalEntry = (entry) => {
+            const day = entry.day;
+            const text = entry.text;
+            const nodes = [];
+            const links = [];
+            const getOrCreateNode = (name, type) => {
+                let node = nodes.find(n => n.name === name);
+                if (!node) {
+                    node = { id: nodes.length, name: name, type: type, day: day };
+                    nodes.push(node);
+                }
+                return node;
+            };
+
+            const personNode = getOrCreateNode('Alex', 'Person');
+            
+            // Simple keyword-based NLP for demonstration
+            if (text.includes("anxious") || text.includes("stressed") || text.includes("frustrated")) {
+                const emotionNode = getOrCreateNode('Anxiety/Stress', 'Emotion');
+                links.push({ source: personNode.id, target: emotionNode.id, relation: 'FELT_EMOTION', day: day });
+            }
+            if (text.includes("relief") || text.includes("calm") || text.includes("accomplished")) {
+                const emotionNode = getOrCreateNode('Calm/Accomplished', 'Emotion');
+                links.push({ source: personNode.id, target: emotionNode.id, relation: 'FELT_EMOTION', day: day });
+            }
+            if (text.includes("focus") || text.includes("productive")) {
+                const emotionNode = getOrCreateNode('Focus/Productivity', 'Emotion');
+                links.push({ source: personNode.id, target: emotionNode.id, relation: 'FELT_EMOTION', day: day });
+            }
+            if (text.includes("run")) {
+                const actionNode = getOrCreateNode('Running', 'Action');
+                links.push({ source: personNode.id, target: actionNode.id, relation: 'PERFORMED_ACTION', day: day });
+            }
+            if (text.includes("meditated") || text.includes("meditation")) {
+                const actionNode = getOrCreateNode('Meditation', 'Action');
+                links.push({ source: personNode.id, target: actionNode.id, relation: 'PERFORMED_ACTION', day: day });
+            }
+            if (text.includes("work deadline")) {
+                const eventNode = getOrCreateNode('Work Deadline', 'Event');
+                links.push({ source: personNode.id, target: eventNode.id, relation: 'HAD_EVENT', day: day });
+            }
+            if (text.includes("late") || text.includes("groggy") || text.includes("sluggish")) {
+                const stateNode = getOrCreateNode('Poor Sleep', 'State');
+                links.push({ source: personNode.id, target: stateNode.id, relation: 'HAD_STATE', day: day });
+            }
+            if (text.includes("early") && text.includes("bed")) {
+                 const stateNode = getOrCreateNode('Good Sleep', 'State');
+                 links.push({ source: personNode.id, target: stateNode.id, relation: 'HAD_STATE', day: day });
+            }
+            
+            // T-GNN-like logic to find causal links between events/states over time
+            const causalLinks = [];
+            // Simplified "T-GNN" logic based on document's case study
+            if (day === 1) {
+                causalLinks.push({ sourceName: 'Work Deadline', targetName: 'Anxiety/Stress', relation: 'CAUSES', day: 1 });
+            }
+            if (day === 2 && rawJournalEntries[0].text.includes("anxious")) {
+                 causalLinks.push({ sourceName: 'Anxiety/Stress', targetName: 'Running', relation: 'TRIGGERED', day: 2, isCounterfactual: true });
+            }
+            if (day === 3 && rawJournalEntries[2].text.includes("groggy")) {
+                 causalLinks.push({ sourceName: 'Poor Sleep', targetName: 'Meditation', relation: 'CAUSES_FAILURE', day: 3, isCounterfactual: true });
+            }
+            if (day === 4 && rawJournalEntries[3].text.includes("late")) {
+                 causalLinks.push({ sourceName: 'Poor Sleep', targetName: 'Meditation', relation: 'CAUSES_FAILURE', day: 4, isCounterfactual: true });
+            }
+            if (day === 5) {
+                 causalLinks.push({ sourceName: 'Anxiety/Stress', targetName: 'Meditation', relation: 'CAUSES_FAILURE', day: 5, isCounterfactual: true });
+            }
+            if (day === 6) {
+                 causalLinks.push({ sourceName: 'Calm/Accomplished', targetName: 'Meditation', relation: 'TRIGGERED', day: 6, isCounterfactual: true });
+            }
+            if (day === 10) {
+                 causalLinks.push({ sourceName: 'Anxiety/Stress', targetName: 'Meditation', relation: 'CAUSES_FAILURE', day: 10, isCounterfactual: true });
+            }
+            if (day === 11) {
+                 causalLinks.push({ sourceName: 'Good Sleep', targetName: 'Meditation', relation: 'CAUSES', day: 11 });
+            }
+            if (day === 13) {
+                 causalLinks.push({ sourceName: 'A heavy lunch', targetName: 'Meditation', relation: 'CAUSES_FAILURE', day: 13, isCounterfactual: true });
+            }
+
+            return { nodes, links, causalLinks };
+        };
+
+        const journalData = rawJournalEntries.map(entry => processJournalEntry(entry));
+        
+        // Combined graph data
+        let allNodes = [];
+        let allLinks = [];
+        let simulationDay = 0;
+        let isSimulationRunning = false;
+
+        const container = d3.select("#graph-container");
+        const svg = container.append("svg");
+        const width = container.node().getBoundingClientRect().width;
+        const height = container.node().getBoundingClientRect().height;
+
+        const showMessage = (message) => {
+            const msgBox = document.getElementById('message-box');
+            document.getElementById('message-text').innerText = message;
+            msgBox.classList.remove('hidden');
+        };
+
+        const renderGraph = (nodes, links) => {
+            svg.selectAll('*').remove();
+            
+            svg.attr("viewBox", `0 0 ${width} ${height}`)
+                .attr("preserveAspectRatio", "xMidYMid meet");
+
+            // Define the arrow marker
+            svg.append("defs").append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "-0 -5 10 10")
+                .attr("refX", 15) // Adjust arrowhead position
+                .attr("refY", 0)
+                .attr("orient", "auto")
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("xoverflow", "visible")
+                .append("svg:path")
+                .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+                .attr("fill", "#9ca3af");
+            
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(100).strength(0.5))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .stop();
+
+            // Run the simulation a fixed number of times for a stable layout
+            simulation.tick(300);
+
+            // Draw links
+            const link = svg.append("g")
+                .attr("stroke", "#9ca3af")
+                .attr("stroke-opacity", 0.6)
+                .selectAll("path")
+                .data(links)
+                .join("path")
+                .attr("stroke-width", 2)
+                .attr("marker-end", "url(#arrowhead)");
+
+            // Draw nodes
+            const node = svg.append("g")
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 1.5)
+                .selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("r", 15)
+                .attr("fill", d => {
+                    switch (d.type) {
+                        case 'Person': return '#3b82f6';
+                        case 'Emotion': return '#f87171';
+                        case 'Action': return '#22c55e';
+                        case 'Event': return '#facc15';
+                        case 'State': return '#818cf8';
+                        default: return '#6b7280';
+                    }
+                })
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
+
+            // Draw link labels
+            const linkText = svg.append("g")
+                .selectAll("text")
+                .data(links)
+                .join("text")
+                .text(d => d.relation)
+                .attr("class", "link-text")
+                .attr("x", d => (d.source.x + d.target.x) / 2)
+                .attr("y", d => (d.source.y + d.target.y) / 2);
+
+            // Draw node labels
+            const nodeText = svg.append("g")
+                .selectAll("text")
+                .data(nodes)
+                .join("text")
+                .text(d => d.name)
+                .attr("class", "node-text")
+                .attr("x", d => d.x)
+                .attr("y", d => d.y + 25);
+            
+            node.on("mouseover", function(event, d) {
+                const tooltip = d3.select("#tooltip");
+                tooltip.style("opacity", 1)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px")
+                    .html(`<strong>${d.name}</strong><br>Type: ${d.type}<br>Day: ${d.day}`);
+            }).on("mouseout", function() {
+                d3.select("#tooltip").style("opacity", 0);
+            });
+        };
+
+        const updateGraph = (day) => {
+            const currentDayData = journalData.slice(0, day).reduce((acc, current) => {
+                const newNodes = current.nodes.filter(n => !acc.nodes.some(an => an.name === n.name));
+                acc.nodes.push(...newNodes);
+
+                const existingNodeIds = acc.nodes.map(n => n.name);
+                const newLinks = current.links.filter(l => {
+                    const sourceNode = acc.nodes.find(n => n.id === l.source);
+                    const targetNode = acc.nodes.find(n => n.id === l.target);
+                    return sourceNode && targetNode;
+                });
+                
+                // Add causal links and mark them differently
+                current.causalLinks.forEach(cl => {
+                    const sourceNode = acc.nodes.find(n => n.name === cl.sourceName);
+                    const targetNode = acc.nodes.find(n => n.name === cl.targetName);
+                    if (sourceNode && targetNode) {
+                        acc.links.push({ source: sourceNode.id, target: targetNode.id, relation: cl.relation, day: cl.day, isCausal: true });
+                    }
+                });
+                acc.links.push(...newLinks);
+                
+                return acc;
+            }, { nodes: [], links: [] });
+
+            renderGraph(currentDayData.nodes, currentDayData.links);
+            document.getElementById('current-day').innerText = day;
+            
+            const journalContainer = document.getElementById('journal-entries');
+            journalContainer.innerHTML = '';
+            rawJournalEntries.slice(0, day).forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'border-b border-gray-200 pb-2';
+                entryDiv.innerHTML = `<p class="font-semibold text-gray-800">Day ${entry.day}:</p><p class="text-gray-600">${entry.text}</p>`;
+                journalContainer.appendChild(entryDiv);
+            });
+        };
+
+        document.getElementById('timeline-slider').addEventListener('input', (event) => {
+            if (isSimulationRunning) return;
+            simulationDay = parseInt(event.target.value);
+            updateGraph(simulationDay);
+        });
+
+        document.getElementById('next-day').addEventListener('click', () => {
+            if (isSimulationRunning) return;
+            if (simulationDay < 14) {
+                simulationDay++;
+                document.getElementById('timeline-slider').value = simulationDay;
+                updateGraph(simulationDay);
+            }
+        });
+
+        document.getElementById('run-simulation').addEventListener('click', () => {
+            if (isSimulationRunning) return showMessage("A simulation is already running.");
+            const select = document.getElementById('counterfactual-select');
+            const scenario = select.value;
+            const insights = document.getElementById('insights');
+            const insightText = document.getElementById('insight-text');
+
+            if (scenario === 'none') {
+                showMessage("Please select a counterfactual scenario to run.");
+                return;
+            }
+
+            isSimulationRunning = true;
+            select.disabled = true;
+            document.getElementById('run-simulation').disabled = true;
+
+            insights.classList.add('hidden');
+            let counterfactualData = {
+                nodes: [],
+                links: [],
+                insights: ""
+            };
+
+            if (scenario === 'c1') {
+                 // Counterfactual 1: What if I had prepared for my deadline on Sunday?
+                counterfactualData.insights = "The model predicts that if you had spent one hour on Sunday preparing for your work deadline, you would have gotten better sleep on Day 1, had more energy, and successfully completed your run. This would have led to a positive chain of events, rather than the initial anxiety pathway.";
+                
+                // Simulate a new, "positive" path
+                const nodes = [
+                    { id: 0, name: 'Alex', type: 'Person', day: 0 },
+                    { id: 1, name: 'Sunday Prep', type: 'Action', day: 0 },
+                    { id: 2, name: 'Reduced Anxiety', type: 'Emotion', day: 1 },
+                    { id: 3, name: 'Good Sleep', type: 'State', day: 1 },
+                    { id: 4, name: 'More Energy', type: 'State', day: 2 },
+                    { id: 5, name: 'Completed Run', type: 'Action', day: 2 }
+                ];
+                const links = [
+                    { source: 0, target: 1, relation: 'PERFORMED_ACTION', isCausal: false },
+                    { source: 1, target: 2, relation: 'CAUSES', isCausal: true },
+                    { source: 2, target: 3, relation: 'CAUSES', isCausal: true },
+                    { source: 3, target: 4, relation: 'CAUSES', isCausal: true },
+                    { source: 4, target: 5, relation: 'CAUSES', isCausal: true }
+                ];
+                counterfactualData.nodes = nodes;
+                counterfactualData.links = links;
+            }
+            if (scenario === 'c2') {
+                // Counterfactual 2: What if I had meditated for 15 mins on Day 7?
+                counterfactualData.insights = "The model predicts that if you had meditated on Day 7, you would have experienced a smoother transition into the work week, avoiding the initial sluggishness on Day 8 and instead experiencing a greater sense of calm and focus.";
+
+                // Simulate a new, "positive" path
+                const nodes = [
+                    { id: 0, name: 'Alex', type: 'Person', day: 0 },
+                    { id: 1, name: 'Meditation (Day 7)', type: 'Action', day: 7 },
+                    { id: 2, name: 'Sense of Calm', type: 'Emotion', day: 8 },
+                    { id: 3, name: 'Smooth Start', type: 'State', day: 8 },
+                    { id: 4, name: 'Productive Week', type: 'Event', day: 9 }
+                ];
+                const links = [
+                    { source: 0, target: 1, relation: 'PERFORMED_ACTION', isCausal: false },
+                    { source: 1, target: 2, relation: 'CAUSES', isCausal: true },
+                    { source: 2, target: 3, relation: 'CAUSES', isCausal: true },
+                    { source: 3, target: 4, relation: 'CAUSES', isCausal: true },
+                ];
+                counterfactualData.nodes = nodes;
+                counterfactualData.links = links;
+            }
+
+            // Simulate the T-GNN "thinking" process
+            let simulationStep = 0;
+            const simulationInterval = setInterval(() => {
+                if (simulationStep > counterfactualData.nodes.length) {
+                    clearInterval(simulationInterval);
+                    insights.classList.remove('hidden');
+                    insightText.innerText = counterfactualData.insights;
+                    isSimulationRunning = false;
+                    select.disabled = false;
+                    document.getElementById('run-simulation').disabled = false;
+                    return;
+                }
+
+                const currentNodes = counterfactualData.nodes.slice(0, simulationStep);
+                const currentLinks = counterfactualData.links.filter(l => l.source < simulationStep && l.target < simulationStep);
+
+                renderGraph(currentNodes, currentLinks);
+                simulationStep++;
+            }, 500); // 0.5 second delay between steps
+        });
+
+        // Initial render
+        window.onload = () => {
+            updateGraph(0);
+        };
+    </script>
+</body>
+</html>

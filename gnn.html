@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GNN for DepEd Docs</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div id="root"></div>
+
+    <!-- React & ReactDOM via CDN -->
+    <script
+      src="https://unpkg.com/react@18/umd/react.development.js"
+      crossorigin
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+      crossorigin
+    ></script>
+    <!-- Babel to compile JSX in browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+      const { useState } = React;
+
+      // Define the simulated DepEd documents
+      const depedDocuments = [
+        {
+          id: 'do-017-s-2025',
+          type: 'DepEd Order',
+          title: 'Revised Basic Education Enrollment Policy',
+          category: 'Policy & Administration',
+          fullText: 'The Department of Education issues this Revised Basic Education Enrollment Policy to ensure a consistent and transparent process for the registration of learners in all public and private schools nationwide. This policy, effective for the upcoming school year, outlines the specific requirements, timelines, and procedures for enrollment, including provisions for late registrants and transferees. It supersedes all previous issuances on the matter to avoid confusion and streamline the process for parents, guardians, and school personnel. The policy emphasizes the right of every Filipino child to a quality basic education, regardless of their background or circumstances.',
+          summary: 'This policy revises the enrollment guidelines for all public and private schools. It details the requirements, timelines, and procedures for both new and transferring students to ensure a consistent and accessible process. The new policy supersedes previous regulations to streamline enrollment.',
+          related: [
+            { id: 'dm-123-s-2025', title: 'Streamlining of Enrollment Procedures' },
+            { id: 'do-003-s-2018', title: 'Basic Education Enrollment Policy (Previous)' },
+          ]
+        },
+        {
+          id: 'dm-123-s-2025',
+          type: 'DepEd Memorandum',
+          title: 'Streamlining of Enrollment Procedures for SY 2025-2026',
+          category: 'Procedural & Operational',
+          fullText: 'This Memorandum provides operational guidelines for the implementation of the new enrollment policy outlined in DepEd Order No. 017, s. 2025. All Schools Division Offices and school heads are directed to strictly adhere to the updated procedures to ensure a smooth and efficient enrollment period. Key points include the use of the LIS (Learner Information System) and EBEIS (Enhanced Basic Education Information System) for data submission, a guide for handling common queries from parents, and a schedule of reporting to the Regional Office. This is a temporary issuance to support the new policy.',
+          summary: 'This memorandum provides operational guidelines for implementing the revised enrollment policy (DO 017, s. 2025). It directs schools to follow new procedures, use specific information systems for data, and provides a reporting schedule to the regional offices.',
+          related: [
+            { id: 'do-017-s-2025', title: 'Revised Basic Education Enrollment Policy' },
+            { id: 'dm-150-s-2024', title: 'Guidelines on the Use of LIS and EBEIS' },
+          ]
+        },
+        {
+          id: 'dm-098-s-2025',
+          type: 'DepEd Memorandum',
+          title: 'Call for Nominations for the Gawad Teodora Alonso Awards',
+          category: 'Awards & Recognition',
+          fullText: 'The Department of Education, through the External Partnerships Service, is now accepting nominations for the Gawad Teodora Alonso Awards, an annual search for outstanding teachers and school leaders. This year’s theme focuses on innovators in literacy and numeracy. Guidelines for the submission of entries, including eligibility criteria and required documents, are detailed in the attached annexes. School Division Offices are encouraged to disseminate this memorandum widely and to submit their nominations to the Central Office by October 30, 2025. The awards aim to recognize the exceptional contributions of our educators in nation-building.',
+          summary: 'DepEd is seeking nominations for the annual Gawad Teodora Alonso Awards. This year\'s search focuses on outstanding teachers and school leaders who have excelled in promoting literacy and numeracy. The memorandum outlines the criteria and submission process.',
+          related: [
+            { id: 'dm-075-s-2024', title: 'Winners of Gawad Teodora Alonso 2024' },
+            { id: 'dm-120-s-2023', title: 'Guidelines on the DepEd Awards System' },
+          ]
+        },
+        {
+          id: 'mo-999-s-2025',
+          type: 'Office Memorandum',
+          title: 'Advisory on Cyber-security Protocols',
+          category: 'Security & Compliance',
+          fullText: 'This is an urgent Office Memorandum concerning a recent increase in phishing attempts targeting DepEd personnel. All staff are reminded to be vigilant and to follow the established cyber-security protocols. Do not click on suspicious links, do not open attachments from unknown senders, and change your password immediately if you suspect your account has been compromised. All personnel are required to complete the mandatory online cyber-security awareness training by the end of the month. This advisory is for internal distribution only and is intended to mitigate risks to the Department\'s information systems.',
+          summary: 'This is an internal advisory reminding all personnel about increased phishing attempts. It urges staff to be vigilant, follow established cyber-security protocols, and complete mandatory online training to protect the Department\'s information systems.',
+          related: [],
+          isOutlier: true,
+        },
+      ];
+
+      const App = () => {
+        const [selectedDocId, setSelectedDocId] = useState(null);
+        const [loading, setLoading] = useState(false);
+        const selectedDoc = depedDocuments.find(doc => doc.id === selectedDocId);
+
+        const handleSelectDocument = (id) => {
+          setLoading(true);
+          setSelectedDocId(null);
+          setTimeout(() => {
+            setSelectedDocId(id);
+            setLoading(false);
+          }, 1200);
+        };
+
+        const getIcon = (type) => {
+          switch (type) {
+            case 'Policy & Administration':
+              return <span className="text-blue-500">📁</span>;
+            case 'Procedural & Operational':
+              return <span className="text-emerald-500">⚡</span>;
+            case 'Awards & Recognition':
+              return <span className="text-yellow-500">✨</span>;
+            case 'Security & Compliance':
+              return <span className="text-red-500">⚠️</span>;
+            default:
+              return <span className="text-gray-500">📄</span>;
+          }
+        };
+
+        const ScenarioBlock = ({ title, description, children }) => (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">{title}</h3>
+            <p className="text-sm text-gray-600 mb-4">{description}</p>
+            {children}
+          </div>
+        );
+
+        return (
+          <div className="min-h-screen bg-gray-100 font-sans p-6 md:p-12 flex flex-col items-center">
+            <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl overflow-hidden p-8">
+              <header className="text-center mb-10">
+                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+                  GNN for DepEd Docs
+                </h1>
+                <p className="text-md text-gray-500 max-w-2xl mx-auto">
+                  A visual demonstration of how Graph Neural Networks (GNNs) can revolutionize document management by automatically summarizing, categorizing, and linking DepEd official orders and memoranda.
+                </p>
+              </header>
+
+              <main className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* Document Selector */}
+                <div className="col-span-1">
+                  <h2 className="text-lg font-bold text-gray-700 mb-4">Select a Document</h2>
+                  <div className="space-y-4">
+                    {depedDocuments.map((doc) => (
+                      <button
+                        key={doc.id}
+                        onClick={() => handleSelectDocument(doc.id)}
+                        className={`w-full text-left p-4 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-105 shadow-md flex items-center justify-between ${
+                          selectedDocId === doc.id ? 'bg-indigo-600 text-white shadow-indigo-500/50' : 'bg-gray-50 hover:bg-indigo-50 text-gray-700'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">{doc.title}</p>
+                          <p className={`text-sm mt-1 truncate ${selectedDocId === doc.id ? 'text-indigo-200' : 'text-gray-500'}`}>
+                            {doc.type} • {doc.id}
+                          </p>
+                        </div>
+                        {getIcon(doc.category)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Results Display */}
+                <div className="col-span-2">
+                  {loading && (
+                    <div className="bg-gray-50 rounded-xl shadow-lg p-8 h-full flex flex-col items-center justify-center">
+                      <div className="w-16 h-16 border-4 border-t-4 border-gray-200 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+                      <p className="text-gray-600 text-lg font-medium">Analyzing document with GNN...</p>
+                      <p className="text-sm text-gray-500 mt-2">Creating graph, aggregating node embeddings, and generating results.</p>
+                    </div>
+                  )}
+
+                  {!selectedDoc && !loading && (
+                    <div className="bg-gray-50 rounded-xl shadow-lg p-8 h-full flex flex-col items-center justify-center text-center">
+                      <div className="text-6xl text-indigo-200 mb-4">
+                        <span>📄</span>
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-700">Select a document to begin.</h2>
+                      <p className="mt-2 text-gray-500 max-w-sm">
+                        Choose a DepEd official order or memorandum from the list to see how a GNN can process and understand it.
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedDoc && !loading && (
+                    <div className="space-y-6">
+                      <div className="bg-gray-50 rounded-xl shadow-inner p-6">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                          <span className="text-indigo-500 text-3xl">📄</span>
+                          <span>Document: "{selectedDoc.title}"</span>
+                        </h2>
+                        <p className="text-sm text-gray-500 mb-4">
+                          Document ID: {selectedDoc.id}
+                        </p>
+                        <div className="bg-white p-4 rounded-lg border border-gray-200">
+                          <p className="text-gray-700 text-sm">{selectedDoc.fullText}</p>
+                        </div>
+                      </div>
+
+                      <ScenarioBlock
+                        title="Scenario 1: Categorization"
+                        description="A GNN classifies the document by assigning a label to its 'document node' based on aggregated features from its content nodes. This process ensures accurate and consistent organization."
+                      >
+                        <div className="flex items-center gap-2 bg-indigo-100 text-indigo-800 px-4 py-3 rounded-lg border border-indigo-200">
+                          <span className="text-lg">📁</span>
+                          <span className="font-semibold">Predicted Category:</span>
+                          <span className="font-bold">{selectedDoc.category}</span>
+                        </div>
+                      </ScenarioBlock>
+
+                      <ScenarioBlock
+                        title="Scenario 2: Semantic Summarization"
+                        description="By analyzing the graph, a GNN identifies the most central or 'salient' sentence nodes. The summary is then generated by extracting these key sentences, providing a concise overview of the document's content."
+                      >
+                        <div className="bg-emerald-100 text-emerald-800 p-4 rounded-lg border border-emerald-200">
+                          <span className="font-semibold block mb-1">Generated Summary:</span>
+                          <p className="text-sm">{selectedDoc.summary}</p>
+                        </div>
+                      </ScenarioBlock>
+
+                      {selectedDoc.related.length > 0 && (
+                        <ScenarioBlock
+                          title="Scenario 3: Identifying Related Documents"
+                          description="The GNN measures the semantic similarity between the graphs of different documents. Documents with similar graph structures and node embeddings are identified as being highly related, enabling easy cross-referencing."
+                        >
+                          <div className="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                            <span className="font-semibold block mb-2">Documents with High Semantic Similarity:</span>
+                            <ul className="space-y-2">
+                              {selectedDoc.related.map(rel => (
+                                <li key={rel.id} className="flex items-center gap-2 text-gray-700">
+                                  <span className="text-sm">🔗</span>
+                                  <span className="text-sm">{rel.title} ({rel.id})</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </ScenarioBlock>
+                      )}
+
+                      {selectedDoc.isOutlier && (
+                        <ScenarioBlock
+                          title="Scenario 4: Anomaly Detection"
+                          description="A GNN can detect anomalies by identifying documents with a unique graph structure or unusual content that does not match the patterns of typical DepEd issuances, flagging it for further review."
+                        >
+                          <div className="bg-red-100 text-red-800 p-4 rounded-lg border border-red-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-lg">👻</span>
+                              <span className="font-semibold">Anomaly Detected:</span>
+                            </div>
+                            <p className="text-sm">This document's graph structure is a significant outlier from the standard corpus of DepEd issuances, suggesting it may not be a typical policy or memorandum. It is flagged for manual review.</p>
+                          </div>
+                        </ScenarioBlock>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </main>
+            </div>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
