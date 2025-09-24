@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 5: Lesson 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .slide-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .slide {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-active {
+            display: flex;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-button:hover {
+            background-color: #4338ca;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .nav-button.left {
+            left: 2rem;
+        }
+
+        .nav-button.right {
+            right: 2rem;
+        }
+
+        .slide-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .slide-content h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .slide-content p {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            margin-bottom: 1rem;
+            color: #4b5563;
+        }
+
+        .slide-content ul {
+            list-style: none;
+            text-align: left;
+            margin: 0 auto;
+        }
+
+        .slide-content li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            color: #374151;
+        }
+
+        .slide-content li::before {
+            content: '•';
+            color: #4f46e5;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .analogy-box {
+            background-color: #e0f2fe;
+            border: 2px solid #38bdf8;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .analogy-box h3 {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #0c4a6e;
+            margin-bottom: 0.5rem;
+        }
+
+        .analogy-box p {
+            font-size: 1rem;
+            line-height: 1.5rem;
+            color: #0e7490;
+        }
+        
+        .interactive-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 2rem;
+        }
+        
+        #transfer-simulation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .account-box {
+            border: 2px solid #cbd5e1;
+            border-radius: 0.75rem;
+            padding: 1rem 2rem;
+            text-align: center;
+            width: 150px;
+        }
+
+        .balance {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        #message-box {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #ef4444;
+            font-style: italic;
+        }
+
+        #index-simulation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        #search-status {
+            font-size: 1.125rem;
+            font-weight: 500;
+            min-height: 2rem;
+        }
+
+        .loading-dots {
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            animation: dot-loading 1.5s infinite steps(1);
+        }
+
+        @keyframes dot-loading {
+            0% { content: ''; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div id="slides-container" class="slide-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <div class="slide slide-active" id="slide1">
+            <div class="slide-content text-center">
+                <h1 class="text-4xl lg:text-5xl font-extrabold text-indigo-700 leading-tight">Module 5: Database Management System</h1>
+                <h2 class="text-2xl lg:text-3xl font-semibold text-gray-800 mt-2">Lesson 2: DBMS and its Key Functions</h2>
+                <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">Understanding the software that makes databases powerful and usable.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Recap & Introduction -->
+        <div class="slide" id="slide2">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-6">Recap & Introduction</h2>
+                <p class="text-xl text-gray-600 mb-4">In Lesson 1, we learned that a database is just a <span class="font-bold text-indigo-600">structured container for data.</span></p>
+                <p class="text-xl text-gray-600 mb-4">But how do we interact with it? How do we create the structure, add data, or retrieve information?</p>
+                <p class="text-xl text-gray-600 mb-4">We need a special tool: a <span class="font-bold text-indigo-600">Database Management System (DBMS).</span> A DBMS is the software that allows us to create, access, maintain, and modify the data within a database.</p>
+            </div>
+        </div>
+
+        <!-- Slide 3: What is a DBMS? -->
+        <div class="slide" id="slide3">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">What is a DBMS?</h2>
+                <p class="text-lg text-gray-600">A <span class="font-bold text-indigo-600">Database Management System (DBMS)</span> is a software system used to store, retrieve, and run queries on data.</p>
+                <p class="text-lg text-gray-600 mt-2">It acts as an <span class="font-bold text-indigo-600">interface between the end-user and the database,</span> providing a systematic way to manage information while ensuring data integrity, security, and consistency.</p>
+                <div class="analogy-box mt-6">
+                    <h3 class="text-xl font-bold text-indigo-800 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 4a8 8 0 100 16 8 8 0 000-16zM12 6a6 6 0 110 12 6 6 0 010-12zM12 8a4 4 0 100 8 4 4 0 000-8zM12 10a2 2 0 100 4 2 2 0 000-4z" />
+                        </svg>
+                        Analogy: The Librarian for a Library
+                    </h3>
+                    <ul class="list-disc list-inside mt-2 text-gray-700">
+                        <li><span class="font-bold">The Library Building:</span> This is your <span class="font-bold">database.</span></li>
+                        <li><span class="font-bold">The Books on the Shelves:</span> This is your <span class="font-bold">data.</span></li>
+                        <li><span class="font-bold">The Librarian & Card Catalog System:</span> This is the <span class="font-bold">DBMS.</span> Without the librarian, the library is just a warehouse of books.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: DBMS Scalability and Environment -->
+        <div class="slide" id="slide4">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">DBMS Scalability and Environment</h2>
+                <p class="text-lg text-gray-600">Not all DBMS software is the same. The right one depends on your needs and goals:</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-4">
+                    <li><span class="font-bold text-indigo-600">Scale:</span> Some are for personal use, while others handle massive enterprise-grade databases.</li>
+                    <li><span class="font-bold text-indigo-600">Environment:</span> A DBMS may need to work across different hardware and operating systems simultaneously.</li>
+                    <li><span class="font-bold text-indigo-600">The Cloud:</span> Modern DBMS are often cloud-capable, allowing remote access and management.</li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Scenario: Local vs. Cloud DBMS</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-2 space-y-2">
+                    <li><span class="font-bold">Local DBMS:</span> A small business owner uses Microsoft Access on her office computer to manage a local customer list.</li>
+                    <li><span class="font-bold">Cloud DBMS:</span> A multinational company uses a cloud-based DBMS so that employees in New York, London, and Tokyo can all access and update the same central product inventory database in real-time.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Overview of Key DBMS Functions -->
+        <div class="slide" id="slide5">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Overview of Key DBMS Functions</h2>
+                <p class="text-lg text-gray-600">A DBMS performs several critical functions to manage a database effectively. These can be grouped into five main categories:</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2 font-semibold">
+                    <li>Data Definition</li>
+                    <li>Data Manipulation</li>
+                    <li>Data Security and Integrity</li>
+                    <li>Data Storage and Retrieval</li>
+                    <li>Data Administration</li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4">Let's explore each of these in more detail.</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: Key Function 1: Data Definition -->
+        <div class="slide" id="slide6">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Key Function 1: Data Definition</h2>
+                <p class="text-lg text-gray-600">This function allows you to <span class="font-bold text-indigo-600">define the database's structure.</span></p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-2xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Schema Definition:</span> You create the blueprint for the database, including defining tables, fields (columns), and relationships.</li>
+                    <li><span class="font-bold text-indigo-600">Data Types:</span> You specify what kind of data each column can hold, such as integers, strings, or dates.</li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Example: Defining a <span class="text-emerald-600">Students</span> Table</p>
+                <div class="overflow-x-auto w-full max-w-lg mx-auto mt-4">
+                    <table class="w-full text-sm db-table">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4">Column Name</th>
+                                <th class="py-2 px-4">Data Type</th>
+                                <th class="py-2 px-4">Constraint</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4">StudentID</td>
+                                <td class="py-2 px-4">INT</td>
+                                <td class="py-2 px-4">PRIMARY KEY</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4">FirstName</td>
+                                <td class="py-2 px-4">VARCHAR</td>
+                                <td class="py-2 px-4">-</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4">EnrollmentDate</td>
+                                <td class="py-2 px-4">DATE</td>
+                                <td class="py-2 px-4">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Key Function 2: Data Manipulation -->
+        <div class="slide" id="slide7">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Key Function 2: Data Manipulation</h2>
+                <p class="text-lg text-gray-600">This involves accessing and using the data. The DBMS ensures that grouped operations (transactions) are reliable.</p>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Interactive Analogy: A Bank Transfer</p>
+                <p class="text-base text-gray-500 italic mb-4">Click the button to simulate a transfer. The transaction must be completed fully (Atomicity).</p>
+                <div class="interactive-section">
+                    <div id="transfer-simulation">
+                        <div class="account-box bg-green-100">
+                            <div class="text-green-800">Savings</div>
+                            <div id="savings-balance" class="balance">$1000</div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <svg class="w-8 h-8 text-indigo-500 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21l-8-8h5V3h6v10h5z" />
+                            </svg>
+                            <span class="text-sm font-semibold mt-1 text-gray-600">$100 Transfer</span>
+                        </div>
+                        <div class="account-box bg-blue-100">
+                            <div class="text-blue-800">Checking</div>
+                            <div id="checking-balance" class="balance">$500</div>
+                        </div>
+                    </div>
+                    <button id="transfer-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full mt-6 transition-colors duration-300 transform hover:scale-105">Start Transfer</button>
+                    <div id="message-box" class="mt-4 font-bold"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Key Function 3: Data Security and Integrity -->
+        <div class="slide" id="slide8">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Key Function 3: Data Security and Integrity</h2>
+                <p class="text-lg text-gray-600">This function protects the data and ensures it is accurate and consistent.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Access Control:</span> Manages user permissions to ensure only authorized users can view or change data.</li>
+                    <li><span class="font-bold text-indigo-600">Integrity Constraints:</span> Enforces rules to maintain data accuracy.</li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Practical Scenario: University Database</p>
+                <p class="text-base text-gray-500 italic">The DBMS ensures a professor can change grades but a student cannot. It also prevents invalid entries, like enrolling a student in a course that doesn't exist.</p>
+            </div>
+        </div>
+
+        <!-- Slide 9: Key Function 4: Data Storage and Retrieval -->
+        <div class="slide" id="slide9">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Key Function 4: Data Storage and Retrieval</h2>
+                <p class="text-lg text-gray-600">This function manages the physical storage of data and optimizes access to it.</p>
+                <div class="analogy-box mt-6">
+                    <h3 class="text-xl font-bold text-indigo-800 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 21l-8-8h5V3h6v10h5z" />
+                        </svg>
+                        Analogy: A Textbook Index
+                    </h3>
+                    <p class="mt-2">Imagine you need to find "Normalization" in a textbook. You could scan every page, or you could use the index to jump directly there. A DBMS index works the same way.</p>
+                </div>
+                <div class="interactive-section">
+                    <div id="index-simulation">
+                        <p id="search-status" class="text-center"></p>
+                        <div class="flex gap-4">
+                            <button id="scan-btn" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Search Without Index</button>
+                            <button id="index-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Search With Index</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Key Function 5: Data Administration -->
+        <div class="slide" id="slide10">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Key Function 5: Data Administration</h2>
+                <p class="text-lg text-gray-600">This function involves managing the overall database environment for optimal performance.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Database Tuning:</span> Optimizes database performance.</li>
+                    <li><span class="font-bold text-indigo-600">Monitoring and Maintenance:</span> Tracks performance and health.</li>
+                </ul>
+                <div class="analogy-box mt-6">
+                    <h3 class="text-xl font-bold text-indigo-800 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18 10h-2.185a5.001 5.001 0 00-9.63 0H6a1 1 0 00-1 1v2a1 1 0 001 1h2.185a5.001 5.001 0 009.63 0H18a1 1 0 001-1v-2a1 1 0 00-1-1zM12 16a3 3 0 110-6 3 3 0 010 6z" />
+                        </svg>
+                        Analogy: A High-Performance Car Mechanic
+                    </h3>
+                    <p class="mt-2">A Database Administrator (DBA) acts like a specialized mechanic. They <span class="font-bold">monitor</span> the car’s performance, perform regular <span class="font-bold">maintenance,</span> and <span class="font-bold">tune</span> the engine to make it run faster and more efficiently.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Summary -->
+        <div class="slide" id="slide11">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Summary</h2>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl space-y-3 text-lg text-gray-700">
+                    <li>A <span class="font-bold text-indigo-600">DBMS is the essential software</span> used to create, manage, and interact with a database.</li>
+                    <li>It acts as an <span class="font-bold text-indigo-600">interface</span> between users and the data.</li>
+                    <li>A DBMS performs <span class="font-bold text-indigo-600">five key functions:</span>
+                        <ul class="list-disc list-inside mt-2 ml-4">
+                            <li><span class="font-semibold">Data Definition:</span> Structuring the database.</li>
+                            <li><span class="font-semibold">Data Manipulation:</span> Querying and updating data.</li>
+                            <li><span class="font-semibold">Data Security & Integrity:</span> Protecting data and ensuring accuracy.</li>
+                            <li><span class="font-semibold">Data Storage & Retrieval:</span> Managing physical storage and optimizing access.</li>
+                            <li><span class="font-semibold">Data Administration:</span> Monitoring and tuning for performance.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <button id="prev-btn" class="nav-button left hidden">Previous</button>
+    <button id="next-btn" class="nav-button right">Next</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            let currentSlideIndex = 0;
+
+            const showSlide = (index) => {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('slide-active');
+                    if (i === index) {
+                        slide.classList.add('slide-active');
+                    }
+                });
+
+                prevBtn.classList.toggle('hidden', index === 0);
+                nextBtn.classList.toggle('hidden', index === slides.length - 1);
+            };
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlideIndex > 0) {
+                    currentSlideIndex--;
+                    showSlide(currentSlideIndex);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlideIndex < slides.length - 1) {
+                    currentSlideIndex++;
+                    showSlide(currentSlideIndex);
+                }
+            });
+
+            // Slide 7: Bank Transfer Interactivity
+            const transferBtn = document.getElementById('transfer-btn');
+            const savingsBalance = document.getElementById('savings-balance');
+            const checkingBalance = document.getElementById('checking-balance');
+            const messageBox = document.getElementById('message-box');
+            const transferAmount = 100;
+
+            transferBtn.addEventListener('click', () => {
+                let savings = parseInt(savingsBalance.textContent.replace('$', ''));
+                let checking = parseInt(checkingBalance.textContent.replace('$', ''));
+
+                transferBtn.disabled = true;
+                messageBox.textContent = 'Transfer in progress...';
+                messageBox.style.color = '#3b82f6';
+
+                // Simulate debit from savings
+                setTimeout(() => {
+                    savings -= transferAmount;
+                    savingsBalance.textContent = `$${savings}`;
+                    
+                    // Simulate a crash after first step (Atomicity fails)
+                    // You can uncomment this to demonstrate a failure
+                    // if (Math.random() > 0.5) {
+                    //     messageBox.textContent = 'Transaction failed! The power went out mid-transfer.';
+                    //     messageBox.style.color = '#ef4444';
+                    //     transferBtn.disabled = false;
+                    //     return;
+                    // }
+
+                    // Simulate credit to checking
+                    setTimeout(() => {
+                        checking += transferAmount;
+                        checkingBalance.textContent = `$${checking}`;
+
+                        messageBox.textContent = 'Transaction successful! Both accounts updated.';
+                        messageBox.style.color = '#10b981';
+                        transferBtn.disabled = false;
+                    }, 1000);
+                }, 1000);
+            });
+
+            // Slide 9: Index Simulation Interactivity
+            const scanBtn = document.getElementById('scan-btn');
+            const indexBtn = document.getElementById('index-btn');
+            const searchStatus = document.getElementById('search-status');
+
+            scanBtn.addEventListener('click', () => {
+                searchStatus.innerHTML = 'Scanning every page<span class="loading-dots"></span>';
+                scanBtn.disabled = true;
+                indexBtn.disabled = true;
+
+                // Simulate a slow, full table scan
+                setTimeout(() => {
+                    searchStatus.textContent = 'Found it! Page 150.';
+                    scanBtn.disabled = false;
+                    indexBtn.disabled = false;
+                }, 3000); // 3-second delay to simulate "slow" search
+            });
+
+            indexBtn.addEventListener('click', () => {
+                searchStatus.textContent = 'Using index...';
+                scanBtn.disabled = true;
+                indexBtn.disabled = true;
+
+                // Simulate an instant indexed search
+                setTimeout(() => {
+                    searchStatus.textContent = 'Found it instantly! Page 150.';
+                    scanBtn.disabled = false;
+                    indexBtn.disabled = false;
+                }, 500); // 0.5-second delay to simulate "fast" search
+            });
+        });
+    </script>
+
+</body>
+</html>

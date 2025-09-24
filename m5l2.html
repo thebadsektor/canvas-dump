@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBMS and its Key Functions</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .slide-section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 1rem;
+            text-align: center;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 800px;
+            margin: 1rem;
+        }
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
+        }
+        .slide-subtitle {
+            font-size: 1.25rem;
+            color: #4b5563;
+        }
+        .function-card {
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            background-color: #eff6ff;
+        }
+        .function-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .active-function-card {
+            background-color: #bfdbfe;
+            border: 2px solid #1e40af;
+        }
+        .diagram-item {
+            position: relative;
+            background-color: #bfdbfe;
+            border: 2px solid #1e40af;
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+        .arrow {
+            width: 100px;
+            height: 2px;
+            background-color: #1e40af;
+            position: relative;
+        }
+        .arrow::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -5px;
+            width: 0;
+            height: 0;
+            border-left: 6px solid #1e40af;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+        }
+        .file-system-card, .dbms-card {
+            border: 2px solid;
+            transition: all 0.5s ease-in-out;
+        }
+        .file-system-card { border-color: #ef4444; }
+        .dbms-card { border-color: #22c55e; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .hidden-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.8, 0, 0.2, 1);
+        }
+
+        .visible-details {
+            max-height: 1000px; /* A large value to allow content to expand */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: Title Slide -->
+    <section class="slide-section bg-gradient-to-br from-blue-700 to-indigo-900 text-white">
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <i class="fas fa-database text-9xl text-white mb-6"></i>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">Module 5: Database Management System</h1>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-semibold opacity-90 mt-2">Lesson 2: DBMS and its Key Functions</h2>
+        </div>
+    </section>
+
+    <!-- Slide 2: What is a DBMS? -->
+    <section class="slide-section bg-gray-100">
+        <div class="card">
+            <h2 class="slide-title">What is a Database Management System (DBMS)?</h2>
+            <p class="slide-subtitle text-gray-600 mb-8">It acts as an interface between a user and a database.</p>
+            
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-8 md:space-y-0 md:space-x-8">
+                <div class="diagram-item">
+                    <i class="fas fa-user text-2xl mb-2"></i>
+                    <div>End-User</div>
+                </div>
+                <div class="arrow md:w-20 lg:w-32 transform md:rotate-0 rotate-90"></div>
+                <div class="diagram-item">
+                    <i class="fas fa-cogs text-2xl mb-2"></i>
+                    <div>DBMS</div>
+                </div>
+                <div class="arrow md:w-20 lg:w-32 transform md:rotate-0 rotate-90"></div>
+                <div class="diagram-item">
+                    <i class="fas fa-database text-2xl mb-2"></i>
+                    <div>Database</div>
+                </div>
+            </div>
+
+            <p class="mt-8 text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+                A **DBMS** is a software system used to store, retrieve, and run queries on data. It provides a systematic way of managing data, ensuring **data integrity, security, and consistency**. Its key role is to manage the flow of data between the user and the database.
+            </p>
+        </div>
+    </section>
+
+    <!-- Slide 3: The Role and Environment of a DBMS -->
+    <section class="slide-section bg-gray-200">
+        <div class="card">
+            <h2 class="slide-title">The Role and Environment of a DBMS</h2>
+            <p class="slide-subtitle text-gray-600 mb-8">Handles data and applications that access it across various environments.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-blue-100 p-6 rounded-xl flex flex-col items-center">
+                    <i class="fas fa-desktop text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2">Personal Workstations</h3>
+                    <p class="text-sm text-gray-600">Designed for single users on a personal computer.</p>
+                </div>
+                <div class="bg-blue-100 p-6 rounded-xl flex flex-col items-center">
+                    <i class="fas fa-server text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2">Enterprise Hardware</h3>
+                    <p class="text-sm text-gray-600">Handles massive databases and complex operations.</p>
+                </div>
+                <div class="bg-blue-100 p-6 rounded-xl flex flex-col items-center">
+                    <i class="fas fa-cloud text-4xl text-blue-600 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2">Cloud Computing</h3>
+                    <p class="text-sm text-gray-600">Manages databases remotely with services like AWS and Azure.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: Why Use a DBMS over Traditional File Systems? -->
+    <section class="slide-section bg-gray-100">
+        <div class="card">
+            <h2 class="slide-title">DBMS vs. Traditional File Systems</h2>
+            <p class="slide-subtitle text-gray-600 mb-8">Interactive comparison of key advantages.</p>
+
+            <div class="flex flex-col md:flex-row justify-around items-stretch space-y-8 md:space-y-0 md:space-x-8">
+                <!-- File System Column -->
+                <div class="file-system-card p-6 rounded-xl shadow-lg flex-1">
+                    <div class="flex items-center justify-center mb-4 text-red-600">
+                        <i class="fas fa-folder-open text-4xl mr-3"></i>
+                        <h3 class="font-bold text-xl">File System</h3>
+                    </div>
+                    <ul class="text-left text-gray-700 space-y-3 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                            <div><span class="font-semibold">Poor Security:</span> Data access is managed manually.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                            <div><span class="font-semibold">Low Integrity:</span> No built-in rules to ensure data quality.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                            <div><span class="font-semibold">High Redundancy:</span> Same data stored multiple times.</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- DBMS Column -->
+                <div class="dbms-card p-6 rounded-xl shadow-lg flex-1">
+                    <div class="flex items-center justify-center mb-4 text-green-600">
+                        <i class="fas fa-database text-4xl mr-3"></i>
+                        <h3 class="font-bold text-xl">DBMS</h3>
+                    </div>
+                    <ul class="text-left text-gray-700 space-y-3 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <div><span class="font-semibold">Enhanced Security:</span> Access control, encryption.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <div><span class="font-semibold">Data Integrity:</span> Enforces rules for data consistency.</div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                            <div><span class="font-semibold">Reduced Redundancy:</span> Uses normalization to optimize data.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: Key Functions of a DBMS -->
+    <section class="slide-section bg-gray-200">
+        <div class="card">
+            <h2 class="slide-title">Key Functions of a DBMS</h2>
+            <p class="slide-subtitle text-gray-600 mb-8">Click on an icon to explore each function.</p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+                <!-- Data Definition -->
+                <div class="function-card p-4 rounded-lg flex flex-col items-center justify-center" data-function="data-definition">
+                    <i class="fas fa-sitemap text-3xl text-blue-600 mb-2"></i>
+                    <span class="text-sm font-semibold">1. Data Definition</span>
+                </div>
+                <!-- Data Manipulation -->
+                <div class="function-card p-4 rounded-lg flex flex-col items-center justify-center" data-function="data-manipulation">
+                    <i class="fas fa-edit text-3xl text-blue-600 mb-2"></i>
+                    <span class="text-sm font-semibold">2. Data Manipulation</span>
+                </div>
+                <!-- Data Security and Integrity -->
+                <div class="function-card p-4 rounded-lg flex flex-col items-center justify-center" data-function="security-integrity">
+                    <i class="fas fa-shield-alt text-3xl text-blue-600 mb-2"></i>
+                    <span class="text-sm font-semibold text-center">3. Data Security & Integrity</span>
+                </div>
+                <!-- Data Storage and Retrieval -->
+                <div class="function-card p-4 rounded-lg flex flex-col items-center justify-center" data-function="storage-retrieval">
+                    <i class="fas fa-hdd text-3xl text-blue-600 mb-2"></i>
+                    <span class="text-sm font-semibold text-center">4. Data Storage & Retrieval</span>
+                </div>
+                <!-- Data Administration -->
+                <div class="function-card p-4 rounded-lg flex flex-col items-center justify-center" data-function="data-administration">
+                    <i class="fas fa-chart-line text-3xl text-blue-600 mb-2"></i>
+                    <span class="text-sm font-semibold">5. Data Administration</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed Function Section -->
+    <section id="function-details" class="slide-section bg-gray-100 hidden-details">
+        <div class="card">
+            <button id="close-details-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 focus:outline-none">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <div id="details-content" class="text-left">
+                <!-- Content will be injected here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: Summary -->
+    <section class="slide-section bg-blue-600 text-white">
+        <div class="card bg-blue-700 text-white">
+            <h2 class="text-3xl font-bold mb-4">Summary</h2>
+            <ul class="text-left space-y-4 text-lg">
+                <li><i class="fas fa-check-circle mr-2 text-green-300"></i> A <span class="font-semibold">DBMS</span> is a crucial software tool that acts as an <span class="font-semibold">interface</span> to create, manage, and interact with a database.</li>
+                <li><i class="fas fa-check-circle mr-2 text-green-300"></i> It is designed to run on a variety of hardware, from personal computers to enterprise-level systems, including <span class="font-semibold">cloud environments</span>.</li>
+                <li><i class="fas fa-check-circle mr-2 text-green-300"></i> A DBMS provides significant advantages over traditional file systems by ensuring <span class="font-semibold">data security, integrity, and consistency</span>.</li>
+                <li><i class="fas fa-check-circle mr-2 text-green-300"></i> Its <span class="font-semibold">key functions</span> are categorized into Data Definition, Data Manipulation, Data Security and Integrity, Data Storage and Retrieval, and Data Administration.</li>
+            </ul>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const functionCards = document.querySelectorAll('.function-card');
+            const detailsSection = document.getElementById('function-details');
+            const detailsContent = document.getElementById('details-content');
+            const closeBtn = document.getElementById('close-details-btn');
+            
+            const functionData = {
+                'data-definition': {
+                    title: 'Function 1: Data Definition',
+                    icon: 'fas fa-sitemap',
+                    description: 'This function defines the database\'s structure.',
+                    items: [
+                        { icon: 'fas fa-border-all', text: 'Schema Definition: Defines the database structure, which includes tables, fields, relationships, and constraints.' },
+                        { icon: 'fas fa-list-ol', text: 'Data Types: Specifies the kinds of data that can be stored, such as integers, strings, or dates.' }
+                    ]
+                },
+                'data-manipulation': {
+                    title: 'Function 2: Data Manipulation',
+                    icon: 'fas fa-edit',
+                    description: 'This function allows users to interact with the data.',
+                    items: [
+                        { icon: 'fas fa-search', text: 'Query Processing: Allows users to retrieve specific data using query languages like SQL.' },
+                        { icon: 'fas fa-sync-alt', text: 'Data Update: Enables the insertion, modification, and deletion of data within the database.' },
+                        { icon: 'fas fa-exchange-alt', text: 'Transaction Management: Ensures that transactions are processed reliably and adhere to the ACID properties.' }
+                    ]
+                },
+                'security-integrity': {
+                    title: 'Function 3: Data Security and Integrity',
+                    icon: 'fas fa-shield-alt',
+                    description: 'This function protects the data and maintains its quality.',
+                    items: [
+                        { icon: 'fas fa-lock', text: 'Access Control: Manages user permissions to ensure only authorized users can access or modify data.' },
+                        { icon: 'fas fa-handshake', text: 'Integrity Constraints: Enforces rules to maintain the accuracy and consistency of data, such as the use of primary and foreign keys.' }
+                    ]
+                },
+                'storage-retrieval': {
+                    title: 'Function 4: Data Storage and Retrieval',
+                    icon: 'fas fa-hdd',
+                    description: 'This function handles the physical aspects of the database and optimizes access.',
+                    items: [
+                        { icon: 'fas fa-server', text: 'Storage Management: Manages the physical storage of data on disk drives.' },
+                        { icon: 'fas fa-fingerprint', text: 'Indexing: Creates indexes to significantly speed up data retrieval operations.' },
+                        { icon: 'fas fa-undo-alt', text: 'Backup and Recovery: Provides mechanisms to back up data regularly and restore it in the event of data loss or corruption.' }
+                    ]
+                },
+                'data-administration': {
+                    title: 'Function 5: Data Administration',
+                    icon: 'fas fa-chart-line',
+                    description: 'This function focuses on performance and ongoing maintenance of the database.',
+                    items: [
+                        { icon: 'fas fa-wrench', text: 'Database Tuning: Optimizes the database\'s performance through methods like query optimization and indexing.' },
+                        { icon: 'fas fa-eye', text: 'Monitoring and Maintenance: Tracks the database\'s performance and carries out regular maintenance tasks to ensure smooth operation.' }
+                    ]
+                }
+            };
+
+            functionCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    const functionKey = card.dataset.function;
+                    const data = functionData[functionKey];
+                    
+                    // Clear previous active state
+                    functionCards.forEach(c => c.classList.remove('active-function-card'));
+                    card.classList.add('active-function-card');
+
+                    // Populate details section
+                    let htmlContent = `
+                        <div class="flex items-center mb-6">
+                            <i class="${data.icon} text-4xl text-blue-600 mr-4"></i>
+                            <h3 class="text-3xl font-bold text-gray-800">${data.title}</h3>
+                        </div>
+                        <p class="text-gray-700 text-lg mb-6">${data.description}</p>
+                        <ul class="space-y-4">
+                            ${data.items.map(item => `
+                                <li class="flex items-start">
+                                    <i class="${item.icon} text-blue-500 mr-3 mt-1 text-xl"></i>
+                                    <div class="text-gray-700 text-lg">${item.text}</div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    detailsContent.innerHTML = htmlContent;
+                    
+                    detailsSection.classList.remove('hidden-details');
+                    detailsSection.classList.add('visible-details', 'fade-in');
+                    detailsSection.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            closeBtn.addEventListener('click', () => {
+                detailsSection.classList.remove('visible-details', 'fade-in');
+                detailsSection.classList.add('hidden-details');
+                document.querySelectorAll('.function-card').forEach(c => c.classList.remove('active-function-card'));
+            });
+        });
+    </script>
+</body>
+</html>

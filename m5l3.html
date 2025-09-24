@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 5: Lesson 3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .slide-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .slide {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-active {
+            display: flex;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-button:hover {
+            background-color: #4338ca;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .nav-button.left {
+            left: 2rem;
+        }
+
+        .nav-button.right {
+            right: 2rem;
+        }
+
+        .slide-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .slide-content h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .slide-content p {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            margin-bottom: 1rem;
+            color: #4b5563;
+        }
+
+        .slide-content ul {
+            list-style: none;
+            text-align: left;
+            margin: 0 auto;
+        }
+
+        .slide-content li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            color: #374151;
+        }
+
+        .slide-content li::before {
+            content: '•';
+            color: #4f46e5;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .analogy-box {
+            background-color: #e0f2fe;
+            border: 2px solid #38bdf8;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .analogy-box h3 {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #0c4a6e;
+            margin-bottom: 0.5rem;
+        }
+
+        .analogy-box p {
+            font-size: 1rem;
+            line-height: 1.5rem;
+            color: #0e7490;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        table th, table td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        
+        table th {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+        }
+
+        table td {
+            background-color: white;
+        }
+
+        .db-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .db-table th, .db-table td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .db-table th {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+        }
+
+        .db-table td {
+            background-color: white;
+        }
+
+        .highlight-link {
+            background-color: #fef3c7;
+            animation: highlight-link-anim 1s ease-in-out infinite alternate;
+            cursor: pointer;
+        }
+
+        @keyframes highlight-link-anim {
+            from {
+                background-color: #fef3c7;
+            }
+            to {
+                background-color: #fde68a;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div id="slides-container" class="slide-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <div class="slide slide-active" id="slide1">
+            <div class="slide-content text-center">
+                <h1 class="text-4xl lg:text-5xl font-extrabold text-indigo-700 leading-tight">Module 5: Database Management System</h1>
+                <h2 class="text-2xl lg:text-3xl font-semibold text-gray-800 mt-2">Lesson 3: DBMS Types</h2>
+                <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">Exploring the different architectures for managing data, from traditional relational models to modern flexible systems.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Learning Outcomes -->
+        <div class="slide" id="slide2">
+            <div class="slide-content max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-6">Learning Outcomes</h2>
+                <p class="text-xl text-gray-600 mb-4">At the end of this lesson, you should be able to:</p>
+                <ul class="text-gray-700 text-left space-y-3">
+                    <li>Differentiate between various types of DBMS, including relational, object-oriented, and NoSQL databases.</li>
+                    <li>Understand the historical evolution and structure of different database models.</li>
+                    <li>Recognize the key components that define a relational database, such as schemas, domains, and constraints.</li>
+                    <li>Identify the appropriate DBMS type for different real-world scenarios.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: A Brief History of DBMS Evolution -->
+        <div class="slide" id="slide3">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">A Brief History of DBMS Evolution</h2>
+                <p class="text-lg text-gray-600">The way we organize databases has evolved significantly over time to address technical challenges.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-4">
+                    <li><span class="font-bold text-indigo-600">Early Models (Hierarchical & Network):</span> The first models were built using a rigid hierarchy, like a family tree.</li>
+                    <li><span class="font-bold text-indigo-600">The Relational Revolution:</span> To solve these problems, the <span class="font-bold text-indigo-600">relational database</span> was developed. It introduced a simple structure with minimal data repetition and became the foundation for SQL.</li>
+                    <li><span class="font-bold text-indigo-600">Modern Demands (NoSQL & OODBMS):</span> As data became larger and less structured (Big Data), new models like NoSQL and Object-Oriented DBMS emerged to offer greater flexibility and scalability.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Slide 4: Overview of DBMS Types -->
+        <div class="slide" id="slide4">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Overview of DBMS Types</h2>
+                <p class="text-lg text-gray-600">We will explore four main categories of Database Management Systems:</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2 font-semibold">
+                    <li>Relational DBMS (RDBMS)</li>
+                    <li>NoSQL DBMS</li>
+                    <li>Object-Oriented DBMS (OODBMS)</li>
+                    <li>Hierarchical and Network DBMS (Legacy Models)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: 1. Relational DBMS (RDBMS) -->
+        <div class="slide" id="slide5">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">1. Relational DBMS (RDBMS)</h2>
+                <p class="text-lg text-gray-600">The RDBMS is the most widely used type of database system.</p>
+                <div class="analogy-box mt-6">
+                    <h3 class="text-xl font-bold text-indigo-800 flex items-center gap-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 4a8 8 0 100 16 8 8 0 000-16zM12 6a6 6 0 110 12 6 6 0 010-12zM12 8a4 4 0 100 8 4 4 0 000-8zM12 10a2 2 0 100 4 2 2 0 000-4z" />
+                        </svg>
+                        Analogy: A Library of Linked Spreadsheets
+                    </h3>
+                    <p class="mt-2">Think of each <span class="font-bold">table</span> as a separate, highly organized spreadsheet. The RDBMS uses keys (like a Student ID) to <span class="font-bold">link</span> these spreadsheets together.</p>
+                    <div class="mt-4 flex flex-col md:flex-row justify-center items-start gap-8 text-sm">
+                        <div class="w-full md:w-1/2">
+                            <h4 class="font-bold mb-2">Students Table</h4>
+                            <table class="db-table w-full">
+                                <thead>
+                                    <tr>
+                                        <th>StudentID</th>
+                                        <th>Name</th>
+                                        <th>CourseID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>101</td>
+                                        <td>Minal</td>
+                                        <td class="highlight-link" data-link="CS101">CS101</td>
+                                    </tr>
+                                    <tr>
+                                        <td>102</td>
+                                        <td>Aastha</td>
+                                        <td class="highlight-link" data-link="EE202">EE202</td>
+                                    </tr>
+                                    <tr>
+                                        <td>103</td>
+                                        <td>Vansh</td>
+                                        <td class="highlight-link" data-link="CS101">CS101</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="w-full md:w-1/2">
+                            <h4 class="font-bold mb-2">Courses Table</h4>
+                            <table class="db-table w-full">
+                                <thead>
+                                    <tr>
+                                        <th>CourseID</th>
+                                        <th>CourseName</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="highlight-link" data-link="CS101">CS101</td>
+                                        <td>Intro to CS</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="highlight-link" data-link="EE202">EE202</td>
+                                        <td>Electronics</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4 italic">Click on a CourseID in either table to see how they are linked!</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Slide 6: RDBMS Components & The Schema/Metadata Distinction -->
+        <div class="slide" id="slide6">
+            <div class="slide-content max-w-4xl mx-auto text-left">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4 text-center">RDBMS Components</h2>
+                <p class="text-lg text-gray-600 mb-4">An RDBMS is defined by three key structural components:</p>
+                <ol class="list-decimal list-inside ml-4 space-y-4">
+                    <li><span class="font-bold text-indigo-600">Schema:</span> This is the <span class="italic">logical blueprint</span> of the entire database. It defines how tables are organized, the relationships between them, and the overall structure. It is the part of the database that addresses the metadata.</li>
+                    <li><span class="font-bold text-indigo-600">Domain:</span> This defines the set of <span class="italic">acceptable values</span> a column can hold. <br>
+                        <p class="text-sm font-normal text-gray-500 pl-4 mt-1">Practical Example: A <span class="italic">Grade</span> column in a <span class="italic">Courses</span> table might have a domain of {'A', 'B', 'C', 'D', 'F'}. The DBMS would reject any other value.</p>
+                    </li>
+                    <li><span class="font-bold text-indigo-600">Constraints:</span> These are rules that <span class="italic">enforce data integrity</span> and limit incorrect data from being entered. <br>
+                        <p class="text-sm font-normal text-gray-500 pl-4 mt-1">Practical Example: A constraint on a <span class="italic">BirthDate</span> column could prevent a user from entering a date in the future.</p>
+                    </li>
+                </ol>
+                <p class="text-lg font-bold text-indigo-600 mt-6 italic text-center">Clarifying Schema vs. Metadata</p>
+                <p class="text-md text-gray-600 mt-2 text-center">Metadata is "data about data"—the detailed specifications. The <span class="font-bold">Schema is the blueprint itself.</span></p>
+            </div>
+        </div>
+
+        <!-- Slide 7: 2. NoSQL DBMS ("Not Only SQL") -->
+        <div class="slide" id="slide7">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">2. NoSQL DBMS ("Not Only SQL")</h2>
+                <p class="text-lg text-gray-600">NoSQL databases were designed for the challenges of modern applications, like Big Data.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Core Concept:</span> Diverges from the strict table-based structure of relational databases.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Key Features:</span> Designed for large volumes of data, diverse data types, and dynamic schemas. They offer flexible data models and are optimized for high performance and horizontal scalability.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">When to Use:</span> Ideal for handling unstructured or semi-structured data, like social media posts, sensor data, or user-generated content.</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Exploring the Four Main Types of NoSQL Databases -->
+        <div class="slide" id="slide8">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Four Main Types of NoSQL Databases</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4">NoSQL Type</th>
+                                <th class="py-2 px-4">How It Works</th>
+                                <th class="py-2 px-4">Analogy</th>
+                                <th class="py-2 px-4">Example Use Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Document-Oriented</td>
+                                <td class="py-2 px-4">Stores data in flexible, self-contained documents (like JSON).</td>
+                                <td class="py-2 px-4">A digital filing cabinet where each folder contains a complete report.</td>
+                                <td class="py-2 px-4">A blogging platform storing an entire article, with its comments and tags.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Key-Value Stores</td>
+                                <td class="py-2 px-4">Stores data as simple key-value pairs.</td>
+                                <td class="py-2 px-4">A dictionary or a phone book.</td>
+                                <td class="py-2 px-4">Caching user session data for a website.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Column-Family</td>
+                                <td class="py-2 px-4">Stores data in columns instead of rows, allowing for varied columns per row.</td>
+                                <td class="py-2 px-4">A spreadsheet where each row can have its own unique set of columns.</td>
+                                <td class="py-2 px-4">A social media feed where posts have different content types (images, videos, text).</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Graph Databases</td>
+                                <td class="py-2 px-4">Focuses on the relationships between data points using nodes and edges.</td>
+                                <td class="py-2 px-4">A social network map showing how people are connected.</td>
+                                <td class="py-2 px-4">A professional networking site like LinkedIn, mapping users to skills and other users.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: 3. Object-Oriented DBMS (OODBMS) -->
+        <div class="slide" id="slide9">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">3. Object-Oriented DBMS (OODBMS)</h2>
+                <p class="text-lg text-gray-600">OODBMS integrates database capabilities with object-oriented programming (OOP) languages.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Core Concept:</span> Stores data as <span class="italic">objects,</span> just as they are represented in application code.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Key Features:</span> Supports OOP concepts like inheritance, encapsulation, and polymorphism directly within the database.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Scenario:</span> Best suited for complex applications where data models are intricate and closely match the objects in the software, such as in computer-aided design (CAD) or scientific modeling systems.</p>
+            </div>
+        </div>
+        
+        <!-- Slide 10: 4. Legacy Models: Hierarchical and Network DBMS -->
+        <div class="slide" id="slide10">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">4. Legacy Models: Hierarchical and Network DBMS</h2>
+                <p class="text-lg text-gray-600">These were the earliest forms of DBMS, now largely replaced but important for historical context.</p>
+                <div class="overflow-x-auto mt-6">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4">Feature</th>
+                                <th class="py-2 px-4">Hierarchical DBMS</th>
+                                <th class="py-2 px-4">Network DBMS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Structure</td>
+                                <td class="py-2 px-4">Tree-like structure. Each record has a single parent and multiple children, like a company org chart.</td>
+                                <td class="py-2 px-4">Graph-like structure. A record can have multiple parent-child relationships, like a web of connections.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Flexibility</td>
+                                <td class="py-2 px-4">Rigid and difficult to modify.</td>
+                                <td class="py-2 px-4">More flexible than hierarchical but very complex to design and maintain.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Example</td>
+                                <td class="py-2 px-4">IBM IMS.</td>
+                                <td class="py-2 px-4">IDMS.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: Summary: Choosing the Right DBMS -->
+        <div class="slide" id="slide11">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Summary: Choosing the Right DBMS</h2>
+                <div class="overflow-x-auto mt-6">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="py-2 px-4">DBMS Type</th>
+                                <th class="py-2 px-4">Data Model</th>
+                                <th class="py-2 px-4">Best For</th>
+                                <th class="py-2 px-4">Example Use Case</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Relational</td>
+                                <td class="py-2 px-4">Structured (Tables)</td>
+                                <td class="py-2 px-4">High data integrity and consistency.</td>
+                                <td class="py-2 px-4">Banking systems, e-commerce stores.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">NoSQL</td>
+                                <td class="py-2 px-4">Flexible (Documents, Key-Value, etc.)</td>
+                                <td class="py-2 px-4">Big Data, real-time applications, unstructured data.</td>
+                                <td class="py-2 px-4">Social media feeds, IoT sensor data logging.</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Object-Oriented</td>
+                                <td class="py-2 px-4">Objects (Matches OOP code)</td>
+                                <td class="py-2 px-4">Niche applications with complex data.</td>
+                                <td class="py-2 px-4">Scientific research, engineering design (CAD).</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 px-4 font-bold">Hierarchical</td>
+                                <td class="py-2 px-4">Tree-like (Parent-Child)</td>
+                                <td class="py-2 px-4">Systems with clearly defined hierarchical data.</td>
+                                <td class="py-2 px-4">Legacy mainframe systems, file directories.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <button id="prev-btn" class="nav-button left hidden">Previous</button>
+    <button id="next-btn" class="nav-button right">Next</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            let currentSlideIndex = 0;
+
+            const showSlide = (index) => {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('slide-active');
+                    if (i === index) {
+                        slide.classList.add('slide-active');
+                    }
+                });
+
+                prevBtn.classList.toggle('hidden', index === 0);
+                nextBtn.classList.toggle('hidden', index === slides.length - 1);
+            };
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlideIndex > 0) {
+                    currentSlideIndex--;
+                    showSlide(currentSlideIndex);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlideIndex < slides.length - 1) {
+                    currentSlideIndex++;
+                    showSlide(currentSlideIndex);
+                }
+            });
+
+            // Slide 5: RDBMS Link Interactivity
+            const linkedCells = document.querySelectorAll('.highlight-link');
+            linkedCells.forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const linkValue = cell.dataset.link;
+                    // Clear all highlights
+                    document.querySelectorAll('.highlight-link').forEach(c => c.classList.remove('highlight-link'));
+                    // Add highlight back to the clicked cells
+                    document.querySelectorAll(`[data-link="${linkValue}"]`).forEach(c => c.classList.add('highlight-link'));
+                });
+            });
+
+            // Initial slide display
+            showSlide(currentSlideIndex);
+        });
+    </script>
+
+</body>
+</html>

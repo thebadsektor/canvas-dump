@@ -13,16 +13,16 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         }
         .form-input {
-            @apply w-full px-4 py-2 bg-gray-700 text-gray-100 rounded-lg shadow-inner border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors;
+        @apply w-full px-4 py-2 bg-gray-200 text-gray-900 rounded-lg shadow-inner border border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors;
         }
         .btn {
-            @apply font-semibold text-white rounded-[5px] shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
+        @apply font-semibold text-white rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl;
         }
         .btn-gradient {
             background-image: linear-gradient(45deg, #4f46e5 0%, #3b82f6 100%);
         }
         .btn-danger {
-            @apply text-sm font-semibold text-white bg-red-600 rounded-[5px] shadow-md transition-all duration-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
+        @apply text-sm font-semibold text-white bg-red-600 rounded-full shadow-md transition-all duration-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
         }
         .card {
             @apply bg-gray-800 p-8 rounded-2xl shadow-2xl backdrop-blur-md bg-opacity-70 border border-gray-700;
@@ -31,7 +31,7 @@
             @apply mt-6 overflow-x-auto;
         }
         table {
-            @apply w-full text-sm text-left text-gray-300;
+        @apply w-full text-sm text-left text-gray-300 table-auto;
         }
         thead {
             @apply text-xs uppercase text-gray-400 bg-gray-700 rounded-t-lg;
@@ -50,19 +50,17 @@
         <header class="text-center mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">Interactive Database Simulation</h1>
             <p class="mt-2 text-lg text-gray-400">A hands-on demonstration of database tables and relationships.</p>
-            <div class="mt-6 text-sm text-gray-400">
-                <span>User ID: </span><span id="userId" class="font-mono bg-gray-700 px-2 py-1 rounded-md text-gray-300">Loading...</span>
-            </div>
             <div class="mb-6">
                 <span class="text-sm font-medium text-gray-300 block mb-2">Choose ID Type:</span>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center justify-center gap-6">
+
                     <label class="inline-flex items-center">
-                        <input type="radio" class="form-radio text-blue-600" name="idType" value="uuid" checked>
-                        <span class="ml-2 text-gray-400">UUID</span>
+                        <input type="radio" class="form-radio text-blue-600" name="idType" value="int" checked>
+                        <span class="ml-2 text-gray-400">Integer ID</span>
                     </label>
                     <label class="inline-flex items-center">
-                        <input type="radio" class="form-radio text-blue-600" name="idType" value="int">
-                        <span class="ml-2 text-gray-400">Integer ID</span>
+                        <input type="radio" class="form-radio text-blue-600" name="idType" value="uuid">
+                        <span class="ml-2 text-gray-400">UUID</span>
                     </label>
                 </div>
             </div>
@@ -99,13 +97,13 @@
                 </form>
 
                 <div class="table-container">
-                    <table class="rounded-lg overflow-hidden">
+                    <table class="rounded-lg overflow-hidden w-full">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Major</th>
-                                <th>Student ID (PK)</th>
-                                <th>Action</th>
+                                <th class="w-10%">🔑 ID</th>
+                                <th class="w-40%">Name</th>
+                                <th class="w-40%">Major</th>
+                                <th class="w-10%">Action</th>
                             </tr>
                         </thead>
                         <tbody id="students-table-body">
@@ -140,14 +138,15 @@
                     <button type="submit" class="btn btn-gradient w-full py-2">Add Course</button>
                 </form>
 
-                <div class="table-container">
-                    <table class="rounded-lg overflow-hidden">
+                <div class="table-container w-full">
+                    <table class="rounded-lg overflow-hidden w-full">
                         <thead>
                             <tr>
-                                <th>Course Name</th>
-                                <th>Student</th>
-                                <th>Student ID (FK)</th>
-                                <th>Action</th>
+                                <th class="w-10%">🔑 ID</th>
+                                <th class="w-20%">Course Name</th>
+                                <th class="w-30%">Student</th>
+                                <th class="w-30%">🔗 Student ID (FK)</th>
+                                <th class="w-10%">Action</th>
                             </tr>
                         </thead>
                         <tbody id="courses-table-body">
@@ -159,201 +158,155 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageBox = document.getElementById('message-box');
+            
+            const addStudentForm = document.getElementById('add-student-form');
+            const studentNameInput = document.getElementById('student-name');
+            const studentMajorInput = document.getElementById('student-major');
+            const studentsTableBody = document.getElementById('students-table-body');
+            const idTypeRadios = document.getElementsByName('idType');
+            
+            const addCourseForm = document.getElementById('add-course-form');
+            const courseNameInput = document.getElementById('course-name');
+            const studentSelect = document.getElementById('student-select');
+            const coursesTableBody = document.getElementById('courses-table-body');
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            let students = [];
+            let courses = [];
+            let nextIntId = 1;
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        setLogLevel('debug');
-
-        const userIdElement = document.getElementById('userId');
-        const messageBox = document.getElementById('message-box');
-        
-        const addStudentForm = document.getElementById('add-student-form');
-        const studentNameInput = document.getElementById('student-name');
-        const studentMajorInput = document.getElementById('student-major');
-        const studentsTableBody = document.getElementById('students-table-body');
-        const idTypeRadios = document.getElementsByName('idType');
-        
-        const addCourseForm = document.getElementById('add-course-form');
-        const courseNameInput = document.getElementById('course-name');
-        const studentSelect = document.getElementById('student-select');
-        const coursesTableBody = document.getElementById('courses-table-body');
-        
-        let studentsCollection, coursesCollection;
-        let unsubscribeStudents, unsubscribeCourses;
-
-        function showMessage(message, isError = false) {
-            messageBox.textContent = message;
-            messageBox.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
-            if (isError) {
-                messageBox.classList.add('bg-red-100', 'text-red-800');
-            } else {
-                messageBox.classList.add('bg-green-100', 'text-green-800');
-            }
-            setTimeout(() => {
-                messageBox.classList.add('hidden');
-            }, 3000);
-        }
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userId = user.uid;
-                userIdElement.textContent = userId;
-
-                studentsCollection = collection(db, `artifacts/${appId}/users/${userId}/students`);
-                coursesCollection = collection(db, `artifacts/${appId}/users/${userId}/courses`);
-
-                setupListeners();
-            } else {
-                userIdElement.textContent = 'Authenticating...';
-                try {
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } else {
-                        await signInAnonymously(auth);
-                    }
-                } catch (error) {
-                    console.error("Authentication Error:", error);
-                    userIdElement.textContent = 'Authentication Failed';
-                    showMessage("Could not authenticate. Please refresh the page.", true);
-                }
-            }
-        });
-
-        async function addStudent(e) {
-            e.preventDefault();
-            const studentName = studentNameInput.value.trim();
-            const studentMajor = studentMajorInput.value.trim();
-            const idType = [...idTypeRadios].find(radio => radio.checked).value;
-
-            if (!studentName || !studentMajor) {
-                showMessage("Please fill in both fields.", true);
-                return;
-            }
-
-            try {
-                if (idType === 'int') {
-                    const snapshot = await getDocs(studentsCollection);
-                    const docIds = snapshot.docs.map(d => parseInt(d.id, 10)).filter(id => !isNaN(id));
-                    const newId = (docIds.length > 0 ? Math.max(...docIds) : 0) + 1;
-                    await setDoc(doc(studentsCollection, newId.toString()), {
-                        name: studentName,
-                        major: studentMajor
-                    });
+            function showMessage(message, isError = false) {
+                messageBox.textContent = message;
+                messageBox.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+                if (isError) {
+                    messageBox.classList.add('bg-red-100', 'text-red-800');
                 } else {
-                    await addDoc(studentsCollection, {
-                        name: studentName,
-                        major: studentMajor
-                    });
+                    messageBox.classList.add('bg-green-100', 'text-green-800');
                 }
-                
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 3000);
+            }
+
+            function addStudent(e) {
+                e.preventDefault();
+                const studentName = studentNameInput.value.trim();
+                const studentMajor = studentMajorInput.value.trim();
+                const idType = [...idTypeRadios].find(radio => radio.checked).value;
+
+                if (!studentName || !studentMajor) {
+                    showMessage("Please fill in all student fields.", true);
+                    return;
+                }
+
+                const newStudent = {
+                    id: idType === 'uuid' ? crypto.randomUUID() : (nextIntId++).toString(),
+                    name: studentName,
+                    major: studentMajor
+                };
+
+                students.push(newStudent);
                 showMessage("Student added successfully!");
                 addStudentForm.reset();
-            } catch (error) {
-                console.error("Error adding student: ", error);
-                showMessage("Failed to add student.", true);
+                renderTables();
             }
-        }
 
-        async function addCourse(e) {
-            e.preventDefault();
-            const courseName = courseNameInput.value.trim();
-            const selectedOption = studentSelect.options[studentSelect.selectedIndex];
-            const studentId = selectedOption.value;
-            const studentName = selectedOption.text.split(' (')[0];
+            function addCourse(e) {
+                e.preventDefault();
+                const courseName = courseNameInput.value.trim();
+                const selectedOption = studentSelect.options[studentSelect.selectedIndex];
+                const studentId = selectedOption.value;
 
-            if (courseName && studentId) {
-                try {
-                    await addDoc(coursesCollection, {
-                        name: courseName,
-                        studentId: studentId,
-                        studentName: studentName
-                    });
-                    showMessage("Course added successfully!");
-                    addCourseForm.reset();
-                } catch (error) {
-                    console.error("Error adding course: ", error);
-                    showMessage("Failed to add course.", true);
+                if (!courseName || !studentId) {
+                    showMessage("Please fill in all course fields.", true);
+                    return;
                 }
-            }
-        }
+                
+                const student = students.find(s => s.id === studentId);
 
-        async function deleteItem(collectionRef, id, itemName) {
-             try {
-                await deleteDoc(doc(collectionRef, id));
-                showMessage(`${itemName} deleted successfully!`);
-            } catch (error) {
-                console.error(`Error deleting ${itemName}: `, error);
-                showMessage(`Failed to delete ${itemName}.`, true);
-            }
-        }
+                const newCourse = {
+                    id: crypto.randomUUID(),
+                    name: courseName,
+                    studentId: studentId,
+                    studentName: student.name
+                };
 
-        function setupListeners() {
-            if (unsubscribeStudents) unsubscribeStudents();
-            unsubscribeStudents = onSnapshot(studentsCollection, (snapshot) => {
+                courses.push(newCourse);
+                showMessage("Course added successfully!");
+                addCourseForm.reset();
+                renderTables();
+            }
+
+            function deleteStudent(studentId) {
+                students = students.filter(s => s.id !== studentId);
+                courses = courses.filter(c => c.studentId !== studentId);
+                showMessage("Student and related courses deleted successfully!");
+                renderTables();
+            }
+
+            function deleteCourse(courseId) {
+                courses = courses.filter(c => c.id !== courseId);
+                showMessage("Course deleted successfully!");
+                renderTables();
+            }
+
+            function renderTables() {
+                // Clear existing table content
                 studentsTableBody.innerHTML = '';
+                coursesTableBody.innerHTML = '';
                 studentSelect.innerHTML = '<option value="" disabled selected>Select a student</option>';
-                snapshot.forEach(doc => {
-                    const student = doc.data();
-                    const studentId = doc.id;
 
-                    // Populate students table
+                // Render students
+                students.forEach(student => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
+                        <td class="font-mono text-xs">${student.id}</td>
                         <td class="font-medium">${student.name}</td>
                         <td>${student.major}</td>
-                        <td class="font-mono text-xs">${studentId}</td>
-                        <td><button class="btn-danger delete-student" data-id="${studentId}">Delete</button></td>
+                        <td><button class="btn-danger delete-student" data-id="${student.id}">Delete</button></td>
                     `;
                     studentsTableBody.appendChild(tr);
 
-                    // Populate student dropdown
                     const option = document.createElement('option');
-                    option.value = studentId;
+                    option.value = student.id;
                     option.textContent = `${student.name} (${student.major})`;
                     studentSelect.appendChild(option);
                 });
-            });
 
-            if (unsubscribeCourses) unsubscribeCourses();
-            unsubscribeCourses = onSnapshot(coursesCollection, (snapshot) => {
-                coursesTableBody.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const course = doc.data();
+                // Render courses
+                courses.forEach(course => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
+                        <td class="font-mono text-xs">${course.id}</td>
                         <td class="font-medium">${course.name}</td>
                         <td>${course.studentName || 'N/A'}</td>
                         <td class="font-mono text-xs">${course.studentId}</td>
-                        <td><button class="btn-danger delete-course" data-id="${doc.id}">Delete</button></td>
+                        <td><button class="btn-danger delete-course" data-id="${course.id}">Delete</button></td>
                     `;
                     coursesTableBody.appendChild(tr);
                 });
+            }
+
+            // Initial render
+            renderTables();
+
+            // Event Listeners
+            addStudentForm.addEventListener('submit', addStudent);
+            addCourseForm.addEventListener('submit', addCourse);
+
+            document.addEventListener('click', (e) => {
+                if (e.target && e.target.classList.contains('delete-student')) {
+                    const studentId = e.target.getAttribute('data-id');
+                    deleteStudent(studentId);
+                }
+                if (e.target && e.target.classList.contains('delete-course')) {
+                    const courseId = e.target.getAttribute('data-id');
+                    deleteCourse(courseId);
+                }
             });
-        }
-        
-        addStudentForm.addEventListener('submit', addStudent);
-        addCourseForm.addEventListener('submit', addCourse);
-
-        document.addEventListener('click', (e) => {
-            if(e.target && e.target.classList.contains('delete-student')) {
-                const id = e.target.getAttribute('data-id');
-                deleteItem(studentsCollection, id, 'Student');
-            }
-            if(e.target && e.target.classList.contains('delete-course')) {
-                const id = e.target.getAttribute('data-id');
-                deleteItem(coursesCollection, id, 'Course');
-            }
         });
-
     </script>
 </body>
 </html>

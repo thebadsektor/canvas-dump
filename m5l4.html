@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 5: Lesson 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .slide-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .slide {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: fadeIn 0.8s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-active {
+            display: flex;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-button:hover {
+            background-color: #4338ca;
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .nav-button.left {
+            left: 2rem;
+        }
+
+        .nav-button.right {
+            right: 2rem;
+        }
+
+        .slide-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .slide-content h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .slide-content p {
+            font-size: 1.125rem;
+            line-height: 1.75rem;
+            margin-bottom: 1rem;
+            color: #4b5563;
+        }
+
+        .slide-content ul {
+            list-style: none;
+            text-align: left;
+            margin: 0 auto;
+        }
+
+        .slide-content li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+            color: #374151;
+        }
+
+        .slide-content li::before {
+            content: '•';
+            color: #4f46e5;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .analogy-box {
+            background-color: #e0f2fe;
+            border: 2px solid #38bdf8;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            text-align: left;
+        }
+
+        .analogy-box h3 {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: #0c4a6e;
+            margin-bottom: 0.5rem;
+        }
+
+        .analogy-box p {
+            font-size: 1rem;
+            line-height: 1.5rem;
+            color: #0e7490;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        table th, table td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: center;
+        }
+        
+        table th {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 600;
+        }
+
+        table td {
+            background-color: white;
+        }
+
+        .interactive-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            border-radius: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+        
+        #concurrency-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #ticket-info {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        #concurrency-msg {
+            min-height: 1.5rem;
+        }
+        
+        .loading-dots {
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            animation: dot-loading 1.5s infinite steps(1);
+        }
+
+        @keyframes dot-loading {
+            0% { content: ''; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        .tooltip.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div id="slides-container" class="slide-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <div class="slide slide-active" id="slide1">
+            <div class="slide-content text-center">
+                <h1 class="text-4xl lg:text-5xl font-extrabold text-indigo-700 leading-tight">Module 5: Database Management System</h1>
+                <h2 class="text-2xl lg:text-3xl font-semibold text-gray-800 mt-2">Lesson 4: Advantages of Using a DBMS</h2>
+                <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">Exploring the key benefits that make a DBMS an essential tool for modern data management.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Learning Outcomes & Recap -->
+        <div class="slide" id="slide2">
+            <div class="slide-content max-w-3xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-6">Recap & Learning Outcomes</h2>
+                <p class="text-xl text-gray-600 mb-4 font-bold">Recap:</p>
+                <ul class="text-gray-700 text-left space-y-3">
+                    <li>A database is a structured collection of data, made "self-describing" by its metadata.</li>
+                    <li>The schema is the overall blueprint or logical structure that organizes this metadata.</li>
+                    <li>A DBMS is the software we use to manage the database.</li>
+                </ul>
+                <p class="text-xl text-gray-600 mb-4 mt-8 font-bold">Learning Outcome:</p>
+                <ul class="text-gray-700 text-left space-y-3">
+                    <li>At the end of this lesson, you will be able to recognize the benefits of using a DBMS, such as data security, data integrity, and efficient data retrieval.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 3: Advantage 1: Centralized Data Management -->
+        <div class="slide" id="slide3">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 1: Centralized Data Management</h2>
+                <p class="text-lg text-gray-600">A DBMS stores all data in one place, rather than having it scattered across different files or systems.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Reduces Data Redundancy and Inconsistency:</span> Prevents duplicate and conflicting copies of data.</li>
+                    <li><span class="font-bold text-indigo-600">Simplifies Access:</span> All users and applications connect to the same source of truth.</li>
+                    <li><span class="font-bold text-indigo-600">Facilitates Backup and Recovery:</span> You only need to back up one central repository.</li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Scenario: Before vs. After a DBMS</p>
+                <p class="text-base text-gray-500 italic mt-2">Without a DBMS, a customer's phone number might be different in the sales, marketing, and support spreadsheets. With a DBMS, it's updated once and is instantly correct for everyone.</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: Advantage 2: Improved Data Security -->
+        <div class="slide" id="slide4">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 2: Improved Data Security</h2>
+                <p class="text-lg text-gray-600">A DBMS provides robust, built-in security measures to protect data from unauthorized access.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Access Control:</span> Implements mechanisms to define who can see or change what data.</li>
+                    <li><span class="font-bold text-indigo-600">Encryption:</span> Can encrypt sensitive data to make it unreadable if stolen.</li>
+                    <li><span class="font-bold text-indigo-600">Audit Trails:</span> Keeps a log of actions for accountability.</li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Practical Example: A University Database</p>
+                <p class="text-base text-gray-500 italic mt-2">A student can only view their own grades. A professor can update grades for students in their specific classes. The DBMS enforces these permissions.</p>
+            </div>
+        </div>
+
+        <!-- Slide 5: Advantage 3: Efficient Data Retrieval and Manipulation -->
+        <div class="slide" id="slide5">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 3: Efficient Data Retrieval and Manipulation</h2>
+                <p class="text-lg text-gray-600">A DBMS uses powerful query languages and indexing to retrieve and modify data quickly.</p>
+                <div class="analogy-box mt-6 text-center">
+                    <h3 class="text-xl font-bold text-indigo-800 flex items-center gap-2 justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.405 9.172 5 7.5 5 5.56 5 4 6.56 4 8.5c0 2.05 1.77 3.5 4 4.5 1.25.594 2.5 1.094 2.5 1.5 0 .27-.22.5-.5.5-.27 0-.5-.23-.5-.5zM12 6.253C13.168 5.405 14.828 5 16.5 5 18.44 5 20 6.56 20 8.5c0 2.05-1.77 3.5-4 4.5-1.25.594-2.5 1.094-2.5 1.5 0 .27.22.5.5.5.27 0 .5-.23.5-.5z" />
+                        </svg>
+                        Analogy: The Textbook Index
+                    </h3>
+                    <p class="mt-2">Search for a topic in a 1,000-page book.</p>
+                    <div class="flex justify-center items-center gap-4 mt-4">
+                        <button id="scan-btn" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Manual Search</button>
+                        <button id="index-btn" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">Indexed Search</button>
+                    </div>
+                    <p id="search-status" class="mt-4 font-semibold text-gray-700"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Advantage 4: Data Consistency and Integrity -->
+        <div class="slide" id="slide6">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 4: Data Consistency and Integrity</h2>
+                <p class="text-lg text-gray-600">A DBMS enforces rules to ensure data entered is accurate, consistent, and reliable.</p>
+                <div class="interactive-container text-center">
+                    <p class="font-semibold text-gray-800">Domain Constraint Simulation</p>
+                    <p class="text-sm text-gray-500 italic">Enter a gender. The system will only accept 'Male', 'Female', or 'Other'.</p>
+                    <div class="flex flex-col items-center mt-4">
+                        <input type="text" id="gender-input" placeholder="Enter gender" class="px-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-center w-full max-w-sm">
+                        <button id="validate-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-6 rounded-full mt-4 transition-colors duration-300 transform hover:scale-105">Validate</button>
+                        <p id="validation-result" class="mt-4 font-semibold text-gray-700 min-h-6"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Advantage 5: Scalability and Flexibility -->
+        <div class="slide" id="slide7">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 5: Scalability and Flexibility</h2>
+                <p class="text-lg text-gray-600">A DBMS is designed to grow with an organization's needs, handling more data and more users without a drop in performance.</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Scalability:</span> Can be scaled up (by adding more power to a single server) or scaled out (by distributing the load across multiple servers).</p>
+                <p class="text-lg text-gray-600 mt-2"><span class="font-bold text-indigo-600">Flexibility:</span> Adapts to changing business requirements, allowing the database structure to be modified.</p>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Scenario: A Growing Social Media App</p>
+                <p class="text-base text-gray-500 italic mt-2">The app grows from 1,000 to 10 million users, and a scalable DBMS handles this massive increase in traffic.</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Advantage 6: Concurrency Control -->
+        <div class="slide" id="slide8">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 6: Concurrency Control</h2>
+                <p class="text-lg text-gray-600">A DBMS manages simultaneous access to the database by multiple users, preventing conflicts and ensuring data remains consistent.</p>
+                <div class="interactive-container text-center">
+                    <p class="font-semibold text-gray-800">Last Ticket Simulation</p>
+                    <p class="text-sm text-gray-500 italic">Imagine two users trying to buy the very last ticket at the exact same time.</p>
+                    <div id="concurrency-box" class="mt-4">
+                        <p id="ticket-info">Tickets Available: <span id="ticket-count">1</span></p>
+                        <div class="flex gap-4">
+                            <button id="user1-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">User 1: Buy Ticket</button>
+                            <button id="user2-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">User 2: Buy Ticket</button>
+                        </div>
+                        <p id="concurrency-msg" class="text-sm font-semibold text-gray-700 min-h-6"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Advantage 7: Backup and Recovery -->
+        <div class="slide" id="slide9">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 7: Backup and Recovery</h2>
+                <p class="text-lg text-gray-600">A DBMS provides reliable mechanisms for creating regular data backups and recovering data in case of a system failure, disaster, or corruption.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Facilitates automated backup and restoration processes.</span></li>
+                    <li><span class="font-bold text-indigo-600">Minimizes downtime and data loss in critical situations.</span></li>
+                </ul>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Scenario: Recovering from a Disaster</p>
+                <p class="text-base text-gray-500 italic mt-2">A company's main server is damaged in a fire. Without a DBMS backup plan, the data could be gone forever. With a DBMS, the database administrator can restore the entire database from an automated backup saved to a secure, off-site location.</p>
+            </div>
+        </div>
+
+        <!-- Slide 10: Advantage 8: Cost Efficiency -->
+        <div class="slide" id="slide10">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Advantage 8: Cost Efficiency</h2>
+                <p class="text-lg text-gray-600">While there are initial setup costs, a DBMS leads to significant cost savings over time by streamlining data management.</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl mt-4 space-y-2">
+                    <li><span class="font-bold text-indigo-600">Reduces Maintenance Costs:</span> Automating tasks like backup and security saves employee hours.</li>
+                    <li><span class="font-bold text-indigo-600">Improves Resource Utilization:</span> Centralized data reduces wasted storage on redundant files.</li>
+                    <li><span class="font-bold text-indigo-600">Increases Operational Efficiency:</span> Faster data retrieval and reporting lead to better, quicker business decisions.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 11: Summary -->
+        <div class="slide" id="slide11">
+            <div class="slide-content max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-indigo-700 mb-4">Summary</h2>
+                <p class="text-lg text-gray-600">By leveraging a DBMS, organizations transform their data from a simple collection of files into a powerful, strategic asset.</p>
+                <p class="text-lg text-gray-600 mt-4 font-semibold">Key Advantages:</p>
+                <ul class="list-disc list-inside text-left mx-auto max-w-xl space-y-2 text-lg text-gray-700 mt-2">
+                    <li>Centralized Data Management</li>
+                    <li>Improved Data Security</li>
+                    <li>Efficient Data Retrieval</li>
+                    <li>Data Consistency and Integrity</li>
+                    <li>Scalability and Flexibility</li>
+                    <li>Concurrency Control</li>
+                    <li>Backup and Recovery</li>
+                    <li>Cost Efficiency</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <button id="prev-btn" class="nav-button left hidden">Previous</button>
+    <button id="next-btn" class="nav-button right">Next</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            let currentSlideIndex = 0;
+
+            const showSlide = (index) => {
+                slides.forEach((slide, i) => {
+                    slide.classList.remove('slide-active');
+                    if (i === index) {
+                        slide.classList.add('slide-active');
+                    }
+                });
+
+                prevBtn.classList.toggle('hidden', index === 0);
+                nextBtn.classList.toggle('hidden', index === slides.length - 1);
+            };
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlideIndex > 0) {
+                    currentSlideIndex--;
+                    showSlide(currentSlideIndex);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlideIndex < slides.length - 1) {
+                    currentSlideIndex++;
+                    showSlide(currentSlideIndex);
+                }
+            });
+
+            // Slide 5: Search Simulation
+            const scanBtn = document.getElementById('scan-btn');
+            const indexBtn = document.getElementById('index-btn');
+            const searchStatus = document.getElementById('search-status');
+
+            scanBtn.addEventListener('click', () => {
+                searchStatus.innerHTML = 'Scanning every page<span class="loading-dots"></span>';
+                scanBtn.disabled = true;
+                indexBtn.disabled = true;
+
+                setTimeout(() => {
+                    searchStatus.textContent = 'Found it! (Took 3 seconds)';
+                    scanBtn.disabled = false;
+                    indexBtn.disabled = false;
+                }, 3000); 
+            });
+
+            indexBtn.addEventListener('click', () => {
+                searchStatus.textContent = 'Using index...';
+                scanBtn.disabled = true;
+                indexBtn.disabled = true;
+
+                setTimeout(() => {
+                    searchStatus.textContent = 'Found it instantly! (Took 0.5 seconds)';
+                    scanBtn.disabled = false;
+                    indexBtn.disabled = false;
+                }, 500); 
+            });
+            
+            // Slide 6: Domain Constraint
+            const genderInput = document.getElementById('gender-input');
+            const validateBtn = document.getElementById('validate-btn');
+            const validationResult = document.getElementById('validation-result');
+            const allowedGenders = ['male', 'female', 'other'];
+
+            validateBtn.addEventListener('click', () => {
+                const input = genderInput.value.trim().toLowerCase();
+                if (allowedGenders.includes(input)) {
+                    validationResult.textContent = `Success! '${genderInput.value}' is a valid entry.`;
+                    validationResult.style.color = '#10b981';
+                } else {
+                    validationResult.textContent = `Error: '${genderInput.value}' is not a valid entry.`;
+                    validationResult.style.color = '#ef4444';
+                }
+            });
+            
+            // Slide 8: Concurrency Control Simulation
+            const user1Btn = document.getElementById('user1-btn');
+            const user2Btn = document.getElementById('user2-btn');
+            const ticketCount = document.getElementById('ticket-count');
+            const concurrencyMsg = document.getElementById('concurrency-msg');
+            let isTicketLocked = false;
+            let tickets = 1;
+
+            const handleBuyTicket = (user) => {
+                if (tickets <= 0) {
+                    concurrencyMsg.textContent = 'No tickets left!';
+                    return;
+                }
+                
+                if (isTicketLocked) {
+                    concurrencyMsg.textContent = `${user} is waiting for the ticket to be unlocked...`;
+                    return;
+                }
+
+                isTicketLocked = true;
+                concurrencyMsg.textContent = `${user} has initiated a transaction. The ticket is now locked.`;
+                user1Btn.disabled = true;
+                user2Btn.disabled = true;
+
+                setTimeout(() => {
+                    tickets--;
+                    ticketCount.textContent = tickets;
+                    concurrencyMsg.textContent = `${user}'s transaction complete! Ticket purchased.`;
+                    isTicketLocked = false;
+                    user1Btn.disabled = false;
+                    user2Btn.disabled = false;
+                }, 2000); 
+            };
+
+            user1Btn.addEventListener('click', () => handleBuyTicket('User 1'));
+            user2Btn.addEventListener('click', () => handleBuyTicket('User 2'));
+
+            // Initial slide display
+            showSlide(currentSlideIndex);
+        });
+    </script>
+</body>
+</html>
