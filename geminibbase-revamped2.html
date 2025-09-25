@@ -23,7 +23,7 @@
         }
         .tab-button.active {
             background-color: #1F2937;
-            color: #E5E7EB;
+            color: #4fd1c5;
             font-weight: 600;
         }
         .chart-container {
@@ -384,6 +384,12 @@
                 <div class="bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-700">
                     <div class="chart-container">
                         <canvas id="recipesRadarChart"></canvas>
+                        <div class="absolute top-0 right-0 mt-4 mr-4 flex flex-col space-y-2">
+                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Reliability</button>
+                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Resource Intensity</button>
+                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Complexity</button>
+                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Profit Potential</button>
+                        </div>
                     </div>
                 </div>
                 <div class="mt-4 text-center text-sm text-gray-400">This radar chart provides a strategic overview of each recipe's performance across four key metrics. Use it to inform your automation strategy.</div>
