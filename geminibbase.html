@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browserbase Director Prompting Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page educational guide. The structure is thematic, starting with a high-level overview and a visual summary (the chart), followed by core prompting principles, and then a tabbed interface for categorized recipes (Simple, Medium, Advanced). This structure was chosen to guide the user from foundational knowledge to practical, complex examples progressively. The tabbed interaction allows users to focus on one complexity level at a time without being overwhelmed, facilitating a better learning flow. User interaction is centered on tab selection to reveal different content sections. -->
+    <!-- Visualization & Content Choices: 
+        Report Info: Guide to Browserbase Director prompting. Goal: Show relationship between recipe complexity and potential profit. Viz/Presentation: Bar Chart. Interaction: Static visual reference. Justification: Provides an immediate, easy-to-understand visual summary of the guide's structure and the value proposition of advancing one's skills. Library: Chart.js (Canvas).
+        Report Info: Core prompting concepts. Goal: Inform user of best practices. Viz/Presentation: Icon-based feature cards. Interaction: None. Justification: Breaks down key principles into digestible, visually separated blocks, improving readability and retention over a simple text list. Method: HTML/CSS with Tailwind.
+        Report Info: Example recipes. Goal: Organize and provide practical examples. Viz/Presentation: Tabbed interface with recipe cards. Interaction: User clicks tabs to switch between categories. Justification: This is a standard, intuitive UI pattern for categorizing content, preventing a long, unmanageable scroll and allowing users to self-select their learning path. Method: HTML/CSS/JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #1a1a1a;
+        }
+        .tab-button.active {
+            background-color: #EAE6E1;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">The Guide to Optimizing Browserbase Director</h1>
+            <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Learn how to craft effective prompts for web automation and unlock profitable strategies, from simple data extraction to advanced workflows.</p>
+        </header>
+
+        <main>
+            <section id="overview" class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8">Complexity vs. Profit Potential</h2>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                     <div class="chart-container">
+                        <canvas id="complexityProfitChart"></canvas>
+                    </div>
+                </div>
+                <div class="text-center mt-4 text-sm text-gray-500">This chart illustrates how increasing automation complexity with Director can lead to higher-value, more profitable outcomes. This guide is structured to help you climb this curve effectively.</div>
+            </section>
+            
+            <section id="principles" class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8">Core Prompting Principles</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-3xl mb-3">🎯</div>
+                        <h3 class="text-lg font-semibold mb-2">Be Specific & Explicit</h3>
+                        <p class="text-gray-600 text-sm">Clearly state your target. Instead of "find the price," use "extract the text from the element with the selector '.price-tag'."</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-3xl mb-3">🔢</div>
+                        <h3 class="text-lg font-semibold mb-2">One Action Per Step</h3>
+                        <p class="text-gray-600 text-sm">Break down complex tasks into a sequence of simple commands. Go to a URL, then click a button, then type text. This improves reliability.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-3xl mb-3">🔎</div>
+                        <h3 class="text-lg font-semibold mb-2">Use Stable Selectors</h3>
+                        <p class="text-gray-600 text-sm">Reference elements by stable IDs or data attributes when possible (e.g., `[data-testid="submit-button"]`). Relying on vague text like "Click the 'Next' button" can be brittle.</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                        <div class="text-3xl mb-3">🔁</div>
+                        <h3 class="text-lg font-semibold mb-2">Describe Loops Clearly</h3>
+                        <p class="text-gray-600 text-sm">When you need to repeat actions, define the scope. For example, "For each element matching '.product-card', extract the title and price."</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="recipes">
+                <h2 class="text-3xl font-bold text-center mb-8">Director Recipes for Profit</h2>
+                <div class="flex justify-center mb-8">
+                    <div class="bg-white rounded-full p-1.5 shadow-sm border border-gray-200 flex space-x-1">
+                        <button onclick="showTab('simple')" class="tab-button active w-28 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200">Simple</button>
+                        <button onclick="showTab('medium')" class="tab-button w-28 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200">Medium</button>
+                        <button onclick="showTab('advanced')" class="tab-button w-28 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200">Advanced</button>
+                    </div>
+                </div>
+
+                <div id="simple" class="tab-content space-y-6">
+                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 1: E-commerce Price Monitoring</h3>
+                        <p class="text-sm font-medium text-green-700 bg-green-50 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Price comparison service, drop-shipping deal finder, or competitor price tracking for a client.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2">The Director Prompt:</h4>
+                                <pre class="bg-gray-100 p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.amazon.com/dp/B08P2H5LW7".
+2. Wait for the element with selector "#corePrice_feature_div" to be visible.
+3. Extract the text from the element with selector "span.a-price-whole" and the element with selector "span.a-price-fraction".
+4. Return the extracted texts.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-700">
+                                    <li><strong class="font-semibold text-gray-900">`Go to...`</strong>: Navigates the browser to a specific product page.</li>
+                                    <li><strong class="font-semibold text-gray-900">`Wait for...`</strong>: Crucial for dynamic pages. It prevents the script from failing before the price information loads.</li>
+                                    <li><strong class="font-semibold text-gray-900">`Extract the text...`</strong>: Precisely targets the dollars and cents of the price using their specific CSS selectors, which you can find with browser developer tools.</li>
+                                    <li><strong class="font-semibold text-gray-900">`Return...`</strong>: Makes the extracted data available as the output of the automation.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="medium" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 2: Lead Generation from a Directory</h3>
+                        <p class="text-sm font-medium text-blue-700 bg-blue-50 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Build and sell targeted lead lists for B2B sales teams or marketing agencies.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2">The Director Prompt:</h4>
+                                <pre class="bg-gray-100 p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.yelp.com/search?find_desc=plumbers&find_loc=San+Francisco%2C+CA".
+2. Wait for 5 seconds for the page to load completely.
+3. For each element that matches the CSS selector "[data-testid='biz-name']", do the following:
+   a. Extract the text of the element.
+   b. Extract the 'href' attribute of the element.
+4. Go to the next page by clicking the element with selector "[aria-label='Next']".
+5. Repeat steps 3-4 three times.
+6. Return the collected data.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-700">
+                                    <li><strong class="font-semibold text-gray-900">`Go to...`</strong>: Starts at a pre-defined search result page on Yelp.</li>
+                                    <li><strong class="font-semibold text-gray-900">`For each element...`</strong>: This is the core looping instruction. Director will find all business name links and perform the nested actions on each one.</li>
+                                    <li><strong class="font-semibold text-gray-900">`Extract the 'href' attribute`</strong>: Shows how to get more than just visible text, like the URL to the business's Yelp page.</li>
+                                    <li><strong class="font-semibold text-gray-900">`Go to the next page...`</strong>: Demonstrates pagination, a key skill for scraping lists that span multiple pages. The selector is specific to Yelp's 'Next' button.</li>
+                                    <li><strong class="font-semibold text-gray-900">`Repeat steps...`</strong>: Controls how many pages the automation will process.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="advanced" class="tab-content hidden space-y-6">
+                    <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 3: Aggregating Real Estate Listings</h3>
+                        <p class="text-sm font-medium text-purple-700 bg-purple-50 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Create a niche real estate aggregation service that alerts users to properties meeting very specific, multi-faceted criteria (e.g., price, square footage, specific keywords in description).</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2">The Director Prompt:</h4>
+                                <pre class="bg-gray-100 p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Set a variable 'listings' to an empty array.
+2. Go to "https://www.zillow.com/homes/for_rent/New-York,-NY_rb/".
+3. Wait for the property cards to load by waiting for an element with selector "article.property-card".
+4. Get all elements matching "article.property-card" and store them in a variable 'cards'.
+5. For each 'card' in 'cards':
+   a. Inside the 'card', find the element with selector "[data-test='property-card-price']" and extract its text into a 'price' variable.
+   b. Inside the 'card', find the element with selector "[data-test='property-card-addr']" and extract its text into an 'address' variable.
+   c. Inside the 'card', find the 'a' element and get its 'href' attribute into a 'link' variable.
+   d. Add an object with 'price', 'address', and 'link' to the 'listings' array.
+6. Check if an element with selector "a[title='Next page']" exists. If it does, click it and go back to step 3.
+7. Return the 'listings' array.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-700">
+                                     <li><strong class="font-semibold text-gray-900">`Set a variable...`</strong>: Initializes an array to store the results, essential for collecting data across multiple pages.</li>
+                                     <li><strong class="font-semibold text-gray-900">`For each 'card' in 'cards'`</strong>: Iterates through each property listing on the page.</li>
+                                     <li><strong class="font-semibold text-gray-900">`Inside the 'card', find...`</strong>: This demonstrates "scoped" searching. Instead of searching the whole page, it looks for the price and address *only within the context of the current property card*. This is vital for accurate data extraction from lists.</li>
+                                     <li><strong class="font-semibold text-gray-900">`Add an object...`</strong>: Shows how to structure the scraped data, creating a clean JSON output with key-value pairs.</li>
+                                     <li><strong class="font-semibold text-gray-900">`Check if an element... exists. If it does...`</strong>: This is advanced conditional logic. The automation will continue to click "Next" and scrape pages until there is no "Next" button left, ensuring it scrapes the entire result set.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content');
+
+        function showTab(tabName) {
+            tabs.forEach(tab => {
+                if (tab.getAttribute('onclick').includes(tabName)) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            contents.forEach(content => {
+                if (content.id === tabName) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        const ctx = document.getElementById('complexityProfitChart').getContext('2d');
+        const complexityProfitChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Simple Recipes', 'Medium Recipes', 'Advanced Recipes'],
+                datasets: [{
+                    label: 'Relative Profit Potential',
+                    data: [25, 60, 95],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.2)',
+                        'rgba(59, 130, 246, 0.2)',
+                        'rgba(139, 92, 246, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(139, 92, 246, 1)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#e5e7eb',
+                        },
+                         ticks: {
+                            color: '#6b7280',
+                            font: {
+                                size: 12,
+                                family: 'Inter'
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                             color: '#374151',
+                             font: {
+                                size: 14,
+                                family: 'Inter'
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#1a1a1a',
+                        titleFont: { size: 14, family: 'Inter', weight: 'bold' },
+                        bodyFont: { size: 12, family: 'Inter' },
+                        padding: 10,
+                        cornerRadius: 6,
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

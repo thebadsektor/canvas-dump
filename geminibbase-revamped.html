@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browserbase Director Ultimate Prompting Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Deep Slate (#121212) with Teal (#00BFA5) and Light Grey (#E5E7EB) accents. -->
+    <!-- Application Structure Plan: The guide is structured to facilitate a progressive learning path. It starts with Core Prompting Principles to establish a foundation, moves to a tabbed section of 10 practical recipes categorized by complexity (Simple, Medium, Advanced), and concludes with an interactive radar chart that visually compares all recipes on metrics like Complexity and Profit. This flow was designed to build user confidence by moving from theory to practical examples, and finally to a high-level strategic overview. The tabbed interface keeps the long list of recipes manageable, and the chart provides a strategic, data-driven summary of the recipes' value. -->
+    <!-- Visualization & Content Choices: 
+        Report Info: Core prompting concepts. Goal: Inform the user of best practices. Viz/Presentation: Icon-based feature cards. Interaction: None. Justification: This method breaks down abstract concepts into visually distinct, digestible blocks, improving comprehension and retention. Method: HTML/CSS with Tailwind and Unicode characters for icons.
+        Report Info: 10 diverse recipes for Browserbase Director. Goal: Provide practical, actionable examples. Viz/Presentation: Tabbed interface with detailed recipe cards. Interaction: User selects a tab to view a specific category of recipes. Justification: The tabs prevent content overload and allow the user to focus on a single complexity level at a time. The cards use `pre` tags for clear code presentation. Method: HTML/CSS/JS.
+        Report Info: Recipe performance metrics. Goal: Compare all 10 recipes strategically. Viz/Presentation: Radar Chart. Interaction: User can observe the performance of each recipe relative to others. Justification: A radar chart is ideal for visualizing multi-variable data points (Complexity, Profit, Reliability, etc.) for each recipe on a single plot, allowing for quick, holistic comparison that would be difficult with a simple bar chart. Library: Chart.js (Canvas).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #E5E7EB;
+        }
+        .tab-button.active {
+            background-color: #1F2937;
+            color: #E5E7EB;
+            font-weight: 600;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+        .recipe-card {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+        pre {
+            background-color: #0F172A;
+            color: #C0C0C0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-100">The Ultimate Director Prompting Guide</h1>
+            <p class="mt-4 text-lg text-gray-400 max-w-3xl mx-auto">Master the art of crafting intelligent, profitable automation recipes for Browserbase Director, from simple tasks to complex edge cases.</p>
+        </header>
+        
+        <main>
+            <section id="principles" class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8 text-gray-100">Core Prompting Principles</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="rounded-2xl p-6 recipe-card">
+                        <div class="text-3xl mb-3 text-teal-400">🎯</div>
+                        <h3 class="text-lg font-semibold mb-2">Be Specific & Explicit</h3>
+                        <p class="text-gray-400 text-sm">Clearly state your target. Instead of "find the price," use "extract the text from the element with the selector '.price-tag'."</p>
+                    </div>
+                    <div class="rounded-2xl p-6 recipe-card">
+                        <div class="text-3xl mb-3 text-teal-400">🔢</div>
+                        <h3 class="text-lg font-semibold mb-2">One Action Per Step</h3>
+                        <p class="text-gray-400 text-sm">Break down complex tasks into a sequence of simple commands. Go to a URL, then click a button, then type text. This improves reliability.</p>
+                    </div>
+                    <div class="rounded-2xl p-6 recipe-card">
+                        <div class="text-3xl mb-3 text-teal-400">🔎</div>
+                        <h3 class="text-lg font-semibold mb-2">Use Stable Selectors</h3>
+                        <p class="text-gray-400 text-sm">Reference elements by stable IDs or data attributes when possible (e.g., `[data-testid="submit-button"]`). Relying on vague text like "Click the 'Next' button" can be brittle.</p>
+                    </div>
+                    <div class="rounded-2xl p-6 recipe-card">
+                        <div class="text-3xl mb-3 text-teal-400">🔁</div>
+                        <h3 class="text-lg font-semibold mb-2">Describe Loops Clearly</h3>
+                        <p class="text-gray-400 text-sm">When you need to repeat actions, define the scope. For example, "For each element matching '.product-card', extract the title and price."</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="recipes">
+                <h2 class="text-3xl font-bold text-center mb-8 text-gray-100">Director Recipes for Profit</h2>
+                <div class="flex justify-center mb-8">
+                    <div class="bg-gray-800 rounded-full p-1.5 shadow-md flex space-x-1">
+                        <button onclick="showTab('simple')" class="tab-button active w-28 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200">Simple</button>
+                        <button onclick="showTab('medium')" class="tab-button w-28 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200">Medium</button>
+                        <button onclick="showTab('advanced')" class="tab-button w-28 py-2 px-4 rounded-full text-sm font-medium transition-colors duration-200">Advanced</button>
+                    </div>
+                </div>
+
+                <div id="simple" class="tab-content space-y-6">
+                    <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 1: E-commerce Price Monitoring</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Price comparison service, drop-shipping deal finder, or competitor price tracking for a client.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.amazon.com/dp/B08P2H5LW7".
+2. Wait for the element with selector "#corePrice_feature_div" to be visible.
+3. Extract the text from the element with selector "span.a-price-whole" and the element with selector "span.a-price-fraction".
+4. Return the extracted texts.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Navigates the browser to a specific product page.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Wait for...`</strong>: Crucial for dynamic pages. It prevents the script from failing before the price information loads.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Extract the text...`</strong>: Precisely targets the dollars and cents of the price using their specific CSS selectors.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Return...`</strong>: Makes the extracted data available as the output of the automation.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 2: Keyword Ranking Check</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Provide automated keyword rank tracking reports to SEO clients on a recurring basis.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.google.com/search?q=best+ai+assistant+2024".
+2. Wait for 3 seconds.
+3. Get the list of URLs from elements with the selector "div.MjjYud a" where the 'href' attribute starts with 'http'.
+4. Return the list.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Executes a search query directly in Google.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Wait for...`</strong>: A simple wait to ensure all results are rendered.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Get the list...`</strong>: A powerful command that scrapes all matching elements at once, filtering to get only valid external links.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Return...`</strong>: Outputs a clean list of URLs, ready for analysis.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 3: Social Media Profile Scraper</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Create targeted lead lists for influencer marketing agencies or sales teams.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://twitter.com/BrowserbaseHQ".
+2. Wait for the element with selector "[data-testid='UserDescription']" to be visible.
+3. Get the text from the element with the selector "[data-testid='UserDescription']".
+4. Get the 'href' attribute from the element with the selector "a[rel='me']".
+5. Return the extracted text and the link.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Directs the automation to the specific profile URL.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Wait for...`</strong>: Waits for the user's bio element to appear on the page before attempting to scrape.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Get the text...`</strong>: Extracts the user's bio text.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Get the 'href' attribute...`</strong>: A targeted prompt to pull a specific link from the profile, like a link to a personal website.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="medium" class="tab-content hidden space-y-6">
+                    <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 4: Lead Generation from a Directory</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Build and sell targeted lead lists for B2B sales teams or marketing agencies.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.yelp.com/search?find_desc=plumbers&find_loc=San+Francisco%2C+CA".
+2. Wait for 5 seconds for the page to load completely.
+3. For each element that matches the CSS selector "[data-testid='biz-name']", do the following:
+   a. Extract the text of the element.
+   b. Extract the 'href' attribute of the element.
+4. Go to the next page by clicking the element with selector "[aria-label='Next']".
+5. Repeat steps 3-4 three times.
+6. Return the collected data.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Starts at a pre-defined search result page on Yelp.</li>
+                                    <li><strong class="font-semibold text-gray-200">`For each element...`</strong>: This is the core looping instruction. It finds all business name links and performs nested actions.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Extract the 'href' attribute`</strong>: Shows how to get more than just visible text, like the URL to the business's Yelp page.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Go to the next page...`</strong>: Demonstrates pagination, a key skill for scraping lists.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Repeat steps...`</strong>: Controls how many pages the automation will process.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 5: Real-Time Inventory Check</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Automation for retail arbitrage or dropshipping, alerting you to low-stock or newly restocked products.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.bestbuy.com/site/apple-airpods-pro-2nd-generation".
+2. Wait for the button with the text "Add to Cart" to be visible.
+3. Check if the button is enabled.
+4. If the button is enabled, return "In Stock".
+5. If the button is not enabled, return "Out of Stock".</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Navigates to a specific product page.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Wait for...`</strong>: Ensures the page has fully loaded the critical "Add to Cart" button, which can be dynamically rendered.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Check if...`</strong>: A conditional command that checks the interactive state of an element, which is a powerful way to determine inventory status.</li>
+                                    <li><strong class="font-semibold text-gray-200">`If... return...`</strong>: The final conditional logic that provides a clear, actionable output based on the button's state.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 6: Public Meeting Minutes Analysis</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Provide a subscription service that alerts real estate investors or journalists to new developments in specific cities or topics.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.cityofchicago.org/city/en/depts/dcd/supp_info/plan_commission.html".
+2. Find all links that contain the text "minutes" and are within the element with the selector ".parsys".
+3. For each link found:
+   a. Get the 'href' attribute of the link.
+   b. Go to the link.
+   c. Extract all the text from the page.
+   d. Check if the extracted text contains the word "affordable housing".
+   e. If it does, return the URL.
+4. Return "No relevant minutes found."</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Navigates to the archive page for meeting minutes.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Find all links...`</strong>: A precise search to find all documents that match a specific keyword.</li>
+                                    <li><strong class="font-semibold text-gray-200">`For each link...`</strong>: Initiates a loop to process each document found. This is a powerful, multi-page automation.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Check if...`</strong>: A core conditional that looks for a specific phrase, allowing you to filter for relevant information.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="advanced" class="tab-content hidden space-y-6">
+                    <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 7: Aggregating Real Estate Listings</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Create a niche real estate aggregation service that alerts users to properties meeting very specific criteria.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Set a variable 'listings' to an empty array.
+2. Go to "https://www.zillow.com/homes/for_rent/New-York,-NY_rb/".
+3. Wait for the property cards to load by waiting for an element with selector "article.property-card".
+4. Get all elements matching "article.property-card" and store them in a variable 'cards'.
+5. For each 'card' in 'cards':
+   a. Inside the 'card', find the element with selector "[data-test='property-card-price']" and extract its text into a 'price' variable.
+   b. Inside the 'card', find the element with selector "[data-test='property-card-addr']" and extract its text into an 'address' variable.
+   c. Inside the 'card', find the 'a' element and get its 'href' attribute into a 'link' variable.
+   d. Add an object with 'price', 'address', and 'link' to the 'listings' array.
+6. Check if an element with selector "a[title='Next page']" exists. If it does, click it and go back to step 3.
+7. Return the 'listings' array.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                     <li><strong class="font-semibold text-gray-200">`Set a variable...`</strong>: Initializes an array to store the results.</li>
+                                     <li><strong class="font-semibold text-gray-200">`For each 'card' in 'cards'`</strong>: Iterates through each property listing.</li>
+                                     <li><strong class="font-semibold text-gray-200">`Inside the 'card', find...`</strong>: This demonstrates "scoped" searching, which is vital for accurate data extraction from lists.</li>
+                                     <li><strong class="font-semibold text-gray-200">`Check if...`</strong>: The conditional logic to handle pagination, ensuring the automation scrapes the entire result set.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 8: Dynamic Form Filling & Submission</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Automate complex grant applications or permit filings for a fee, saving clients massive amounts of time.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://example.com/complex-application".
+2. Type "John Doe" into the input field with the name "applicantName".
+3. Type "555-123-4567" into the input field with the name "phoneNumber".
+4. Click the radio button with the value "individual".
+5. Click the button with the text "Next Step".
+6. Wait for the page to navigate to the next step.
+7. Repeat steps 2-6 for each section of the form until the "Submit" button is visible.
+8. Click the button with the text "Submit".
+9. Return the text "Form submitted successfully."</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Navigates to the first page of the form.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Type...`</strong>: Directs the automation to input specific text into form fields. Using the `name` attribute is a highly stable approach.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Click...`</strong>: Interacts with specific UI elements like buttons and radio buttons.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Repeat...`</strong>: This advanced command handles multi-step forms by repeating a sequence of actions until a specific condition (the final submit button) is met.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Recipe 9: Competitor Ad Creative Scraper</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Sell competitor intelligence reports to marketing agencies or businesses to inform their ad strategy.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Go to "https://www.facebook.com/ads/library/".
+2. Select the dropdown with the text "Search All" and click the option with the text "Advertiser".
+3. Type "Nike" into the input field with the placeholder text "Search by advertiser or keyword".
+4. Click the button with the text "Search".
+5. For each element with the selector "[data-testid='ad-card']", extract the text from the element with the selector "[data-testid='ad-creative-text']".
+6. Repeat step 5 for all pages of the results.
+7. Return the collected ad texts.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Go to...`</strong>: Navigates to the Facebook Ad Library.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Select the dropdown...`</strong>: An advanced command that handles interactive drop-down menus, a common UI element on modern websites.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Type...`</strong>: Enters the competitor's name into the search bar.</li>
+                                    <li><strong class="font-semibold text-gray-200">`For each element...`</strong>: The core loop for scraping the ad creatives.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Repeat...`</strong>: This command tells Director to automatically handle all the pagination and loading of subsequent pages.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content hidden space-y-6">
+                    <div class="rounded-2xl p-8 recipe-card">
+                        <h3 class="text-xl font-semibold mb-3">Jumbo Edge Case Recipe: Customer Service Chatbot Training Data</h3>
+                        <p class="text-sm font-medium text-teal-400 bg-teal-950 rounded-full py-1 px-3 inline-block mb-4">Profit Strategy: Sell highly-structured, cleaned data to companies for training their internal AI chatbots and knowledge bases.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">The Director Prompt:</h4>
+                                <pre class="p-4 rounded-lg text-sm whitespace-pre-wrap"><code>1. Set a variable 'qa_data' to an empty array.
+2. Go to "https://support.google.com/chromebook/?hl=en#topic=3399709".
+3. Wait for all elements with the class ".support-thread-card" to be visible.
+4. For each element that matches the selector ".support-thread-card":
+   a. Extract the text of the element with the selector ".thread-title" and store it in a variable 'question'.
+   b. Click the link with the selector ".thread-title" to navigate to the thread page.
+   c. Wait for the element with the selector ".thread-answer-text" to be visible.
+   d. Extract the text of the element with the selector ".thread-answer-text" and store it in a variable 'answer'.
+   e. Add a new object {'question': question, 'answer': answer} to the 'qa_data' variable.
+   f. Go back to the previous page.
+5. Go to the next page by clicking the element with the selector "[aria-label='Next page']".
+6. Repeat steps 4-5 five times.
+7. Return the 'qa_data' array.</code></pre>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-200">Step-by-Step Breakdown:</h4>
+                                <ul class="list-disc list-inside text-sm space-y-2 text-gray-400">
+                                    <li><strong class="font-semibold text-gray-200">`Set a variable...`</strong>: Initializes an array to store structured Q&A objects.</li>
+                                    <li><strong class="font-semibold text-gray-200">`For each element...`</strong>: The outer loop that handles each question card on the list page.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Click... then Go back...`</strong>: This is the critical, complex part. The automation navigates into each individual question to get its specific answer and then returns to the list page to continue the loop.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Add a new object...`</strong>: Creates a structured JSON object for each Q&A pair, ready for use as training data.</li>
+                                    <li><strong class="font-semibold text-gray-200">`Repeat...`</strong>: This handles both the inner loop (processing each item on a page) and the outer loop (moving to the next page), demonstrating a highly advanced, nested automation.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="metrics" class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8 text-gray-100">Complexity vs. Profit Potential</h2>
+                <div class="bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-700">
+                    <div class="chart-container">
+                        <canvas id="recipesRadarChart"></canvas>
+                    </div>
+                </div>
+                <div class="mt-4 text-center text-sm text-gray-400">This radar chart provides a strategic overview of each recipe's performance across four key metrics. Use it to inform your automation strategy.</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content');
+        const allRecipes = [
+            { name: 'R1: Price Monitor', complexity: 2, profit: 5, reliability: 8, resource: 2 },
+            { name: 'R2: Keyword Rank', complexity: 3, profit: 4, reliability: 7, resource: 4 },
+            { name: 'R3: Social Scraper', complexity: 3, profit: 5, reliability: 6, resource: 3 },
+            { name: 'R4: Lead Gen', complexity: 6, profit: 7, reliability: 5, resource: 5 },
+            { name: 'R5: Inventory Check', complexity: 5, profit: 8, reliability: 8, resource: 4 },
+            { name: 'R6: Meeting Analysis', complexity: 7, profit: 7, reliability: 6, resource: 6 },
+            { name: 'R7: Real Estate', complexity: 8, profit: 9, reliability: 4, resource: 7 },
+            { name: 'R8: Form Fills', complexity: 9, profit: 8, reliability: 7, resource: 6 },
+            { name: 'R9: Ad Creative', complexity: 9, profit: 9, reliability: 5, resource: 8 },
+            { name: 'R10: Chatbot Data', complexity: 10, profit: 10, reliability: 4, resource: 9 }
+        ];
+
+        function showTab(tabName) {
+            tabs.forEach(tab => {
+                if (tab.getAttribute('onclick').includes(tabName)) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            contents.forEach(content => {
+                if (content.id === tabName) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        const ctx = document.getElementById('recipesRadarChart').getContext('2d');
+        const recipesRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Complexity', 'Profit Potential', 'Reliability', 'Resource Intensity'],
+                datasets: allRecipes.map((recipe, index) => {
+                    const colors = [
+                        '#6EE7B7', '#2563EB', '#8B5CF6',
+                        '#FCD34D', '#F472B6', '#10B981',
+                        '#EF4444', '#60A5FA', '#F97316',
+                        '#EC4899'
+                    ];
+                    return {
+                        label: recipe.name,
+                        data: [recipe.complexity, recipe.profit, recipe.reliability, recipe.resource],
+                        backgroundColor: `${colors[index]}40`,
+                        borderColor: colors[index],
+                        borderWidth: 2,
+                        pointBackgroundColor: colors[index],
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: colors[index]
+                    };
+                })
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: '#4B5563' },
+                        grid: { color: '#4B5563' },
+                        pointLabels: {
+                            color: '#E5E7EB',
+                            font: { size: 14, family: 'Inter', weight: 'bold' }
+                        },
+                        ticks: {
+                            display: false,
+                            maxTicksLimit: 5,
+                            min: 0,
+                            max: 10
+                        },
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#E5E7EB',
+                            font: { family: 'Inter' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleFont: { family: 'Inter', size: 14, weight: 'bold' },
+                        bodyFont: { family: 'Inter', size: 12 },
+                        cornerRadius: 6,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.r !== null) {
+                                    label += Math.round(context.parsed.r) + '/10';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
