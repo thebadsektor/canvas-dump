@@ -385,10 +385,10 @@
                     <div class="chart-container">
                         <canvas id="recipesRadarChart"></canvas>
                         <div class="absolute top-0 right-0 mt-4 mr-4 flex flex-col space-y-2">
-                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Reliability</button>
-                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Resource Intensity</button>
-                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Complexity</button>
-                            <button class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Profit Potential</button>
+                            <button id="filter-reliability" onclick="toggleFilter('reliability')" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Reliability</button>
+                            <button id="filter-resource" onclick="toggleFilter('resource')" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Resource Intensity</button>
+                            <button id="filter-complexity" onclick="toggleFilter('complexity')" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Complexity</button>
+                            <button id="filter-profit" onclick="toggleFilter('profit')" class="bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Profit Potential</button>
                         </div>
                     </div>
                 </div>
@@ -429,6 +429,48 @@
             });
         }
 
+        let activeFilter = null;
+
+        function toggleFilter(metric) {
+            const filterButtons = document.querySelectorAll('.flex-col > button');
+            filterButtons.forEach(button => button.style.color = '#ffffff');
+
+            if (activeFilter === metric) {
+                activeFilter = null;
+                updateChart(allRecipes);
+            } else {
+                activeFilter = metric;
+                const sortedRecipes = [...allRecipes].sort((a, b) => b[metric] - a[metric]);
+                const top3 = sortedRecipes.slice(0, 3);
+                updateChart(top3);
+                document.getElementById(`filter-${metric}`).style.color = '#4fd1c5';
+            }
+        }
+
+        function updateChart(recipes) {
+            recipesRadarChart.data.datasets = recipes.map((recipe, index) => {
+                const colors = [
+                    '#6EE7B7', '#2563EB', '#8B5CF6',
+                    '#FCD34D', '#F472B6', '#10B981',
+                    '#EF4444', '#60A5FA', '#F97316',
+                    '#EC4899'
+                ];
+                const originalIndex = allRecipes.findIndex(r => r.name === recipe.name);
+                return {
+                    label: recipe.name,
+                    data: [recipe.complexity, recipe.profit, recipe.reliability, recipe.resource],
+                    backgroundColor: `${colors[originalIndex]}40`,
+                    borderColor: colors[originalIndex],
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[originalIndex],
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: colors[originalIndex]
+                };
+            });
+            recipesRadarChart.update();
+        }
+
         function toggleJumboRecipe() {
             const jumboRecipe = document.getElementById('jumbo-recipe-content');
             jumboRecipe.classList.toggle('hidden');
@@ -439,25 +481,7 @@
             type: 'radar',
             data: {
                 labels: ['Complexity', 'Profit Potential', 'Reliability', 'Resource Intensity'],
-                datasets: allRecipes.map((recipe, index) => {
-                    const colors = [
-                        '#6EE7B7', '#2563EB', '#8B5CF6',
-                        '#FCD34D', '#F472B6', '#10B981',
-                        '#EF4444', '#60A5FA', '#F97316',
-                        '#EC4899'
-                    ];
-                    return {
-                        label: recipe.name,
-                        data: [recipe.complexity, recipe.profit, recipe.reliability, recipe.resource],
-                        backgroundColor: `${colors[index]}40`,
-                        borderColor: colors[index],
-                        borderWidth: 2,
-                        pointBackgroundColor: colors[index],
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: colors[index]
-                    };
-                })
+                datasets: []
             },
             options: {
                 responsive: true,
@@ -510,7 +534,7 @@
         });
         window.addEventListener('load', () => {
             if (recipesRadarChart) {
-                recipesRadarChart.update();
+                updateChart(allRecipes);
             }
         });
     </script>
