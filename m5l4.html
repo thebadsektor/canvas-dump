@@ -249,6 +249,7 @@
             <div class="slide-content text-center">
                 <h1 class="text-4xl lg:text-5xl font-extrabold text-indigo-700 leading-tight">Module 5: Database Management System</h1>
                 <h2 class="text-2xl lg:text-3xl font-semibold text-gray-800 mt-2">Lesson 4: Advantages of Using a DBMS</h2>
+                <h4 class="text-gray-700 mt-2">by Gerald Villaran</h4>
                 <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">Exploring the key benefits that make a DBMS an essential tool for modern data management.</p>
             </div>
         </div>
@@ -370,7 +371,7 @@
                     <p class="font-semibold text-gray-800">Last Ticket Simulation</p>
                     <p class="text-sm text-gray-500 italic">Imagine two users trying to buy the very last ticket at the exact same time.</p>
                     <div id="concurrency-box" class="mt-4">
-                        <p id="ticket-info">Tickets Available: <span id="ticket-count">5</span></p>
+                        <p id="ticket-info">Tickets Available: <span id="ticket-count">3</span></p>
                         <div class="flex gap-4">
                             <button id="user1-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">User 1: Buy Ticket</button>
                             <button id="user2-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full transition-colors duration-300 transform hover:scale-105">User 2: Buy Ticket</button>
@@ -540,10 +541,10 @@
             const concurrencyMsg = document.getElementById('concurrency-msg');
             const resetConcurrencyBtn = document.getElementById('reset-concurrency-btn');
             let isTicketLocked = false;
-            let tickets = 5;
+            let tickets = 3;
 
             const resetConcurrency = () => {
-                tickets = 5;
+                tickets = 3;
                 ticketCount.textContent = tickets;
                 isTicketLocked = false;
                 concurrencyMsg.textContent = '';
